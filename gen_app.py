@@ -55,6 +55,7 @@ for i, b in enumerate(books):
         "series": SERIES_OF.get(ot, ""),
         "placeholder": ot in PLACEHOLDER,
         "isbn": b.get("isbn13", ""),
+        "cover": b.get("cover", ""),
         "confidence": b.get("confidence", ""),
         "notes": b.get("notes", ""),
     })
@@ -226,6 +227,10 @@ main{padding:12px 12px 40px;max-width:820px;margin:0 auto}
 .tag.m{background:#efe7d6;color:var(--muted)}
 .tag.u{background:var(--up);color:#fff}
 .check{margin-left:auto;flex:none;color:var(--sage);font-size:15px}
+.ent.cur{outline:2px solid var(--sage);outline-offset:-2px;background:rgba(91,114,99,.14)}
+.curtag{color:var(--sage);font-size:10px;font-weight:700;margin-left:4px}
+.subnote{margin-top:8px;font-size:12px;color:var(--muted)}
+.ent[onclick]:active{background:rgba(91,114,99,.2)}
 
 /* detail sheet */
 .scrim{position:fixed;inset:0;background:rgba(30,26,18,.5);z-index:100;opacity:0;
@@ -329,19 +334,34 @@ function persist(){ try{ localStorage.setItem("lib_books", JSON.stringify(books)
 const coverCache = JSON.parse(localStorage.getItem("lib_covers")||"{}");
 function saveCovers(){ try{ localStorage.setItem("lib_covers", JSON.stringify(coverCache)); }catch(e){} }
 const ckey = b => b.isbn ? "i:"+b.isbn : "t:"+norm(b.title)+"|"+norm(b.author);
+async function gbThumb(q){
+  try{
+    const r = await fetch("https://www.googleapis.com/books/v1/volumes?country=US&maxResults=3&q="+enc(q));
+    const j = await r.json();
+    for(const it of (j.items||[])){
+      const il = (it.volumeInfo||{}).imageLinks||{};
+      const t = il.thumbnail||il.smallThumbnail;
+      if(t) return t.replace("http://","https://").replace("&edge=curl","").replace(/zoom=\d/,"zoom=1");
+    }
+  }catch(e){}
+  return "";
+}
 async function resolveCover(b){
+  if(b.cover) return b.cover;                 // pre-resolved & baked in — instant, no network
   const k = ckey(b);
   if(coverCache[k]!==undefined) return coverCache[k];
   let url = "";
   try{
+    const t = b.title.replace(/\s*\(multiple\).*/i,"").replace(/\s*series.*/i,"").replace(/ collection/i,"").split(":")[0];
     if(b.isbn){
-      url = "https://covers.openlibrary.org/b/isbn/"+encodeURIComponent(b.isbn)+"-M.jpg?default=false";
+      url = await gbThumb("isbn:"+b.isbn);                                   // Google Books by ISBN (canonical)
+      if(!url) url = "https://covers.openlibrary.org/b/isbn/"+encodeURIComponent(b.isbn)+"-L.jpg?default=false";
     } else {
-      const t = b.title.replace(/\s*\(multiple\).*/i,"").replace(/\s*series.*/i,"").replace(/ collection/i,"");
       const r = await fetch("https://openlibrary.org/search.json?limit=1&fields=cover_i,isbn&title="+enc(t)+"&author="+enc(b.author));
       const j = await r.json();
       const d = (j.docs&&j.docs[0])||{};
       if(d.cover_i) url = "https://covers.openlibrary.org/b/id/"+d.cover_i+"-M.jpg";
+      if(!url) url = await gbThumb("intitle:"+t+(b.author?(" inauthor:"+b.author.split(" and ")[0]):""));   // Google Books fallback
       else if(d.isbn&&d.isbn[0]) url = "https://covers.openlibrary.org/b/isbn/"+d.isbn[0]+"-M.jpg?default=false";
     }
   }catch(e){ url=""; }
@@ -354,7 +374,7 @@ function setCover(el,url){ return new Promise(res=>{ const img=new Image();
 let pendingCovers=[], coverBusy=0;
 function inView(el){ const r=el.getBoundingClientRect(); return r.bottom > -500 && r.top < (window.innerHeight||812)+500; }
 async function pumpCovers(){
-  if(coverBusy>=6) return;
+  if(coverBusy>=12) return;
   const idx = pendingCovers.findIndex(inView);
   if(idx<0) return;
   const el = pendingCovers.splice(idx,1)[0];
@@ -364,7 +384,7 @@ async function pumpCovers(){
 }
 function wireCovers(root){
   pendingCovers = [...root.querySelectorAll("[data-id]")].filter(el=>el.querySelector(".ph,.mph"));
-  for(let i=0;i<6;i++) pumpCovers();
+  for(let i=0;i<12;i++) pumpCovers();
 }
 let _scrollT;
 addEventListener("scroll", ()=>{ clearTimeout(_scrollT); _scrollT=setTimeout(()=>{ for(let i=0;i<6;i++) pumpCovers(); },120); }, {passive:true});
@@ -454,6 +474,29 @@ function seriesMatch(seriesName){
   return {db, owned, entries, published, upcoming, haveCount, total, placeholder};
 }
 
+function ownedIdForEntry(s, e){
+  const m = s.owned.find(b=> norm(b.title)===norm(e.title) || (norm(b.title).length>4 && norm(e.title).includes(norm(b.title))));
+  return m ? m.id : null;
+}
+function entryRow(s, e, curId){
+  const up = e.status==="upcoming";
+  const cls = up?"up":(s.placeholder?"ref":(e.have?"have":"miss"));
+  const oid = (e.have && !s.placeholder) ? ownedIdForEntry(s,e) : null;
+  const isCur = curId!=null && oid===curId;
+  const tag = up?`<span class="tag u">${esc(e.release_date||"upcoming")}</span>`
+                :(s.placeholder?"":(e.have?`<span class="check">✓</span>`:`<span class="tag m">missing</span>`));
+  const click = (oid!=null && oid!==curId) ? ` onclick="openBook(${oid})" style="cursor:pointer"` : "";
+  return `<div class="ent ${cls}${isCur?' cur':''}"${click}><div class="num">${esc(e.index||"•")}</div>
+    <div><div class="et">${esc(e.title)}${isCur?' <span class="curtag">this book</span>':''}</div>${e.year||e.release_date?`<div class="ey">${esc(up?("Releases "+(e.release_date||"TBA")):e.year)}</div>`:""}</div>${tag}</div>`;
+}
+function seriesEntriesHTML(s, curId){
+  if(!s.db) return s.owned.map(b=>`<div class="ent have"><div class="num">•</div><div><div class="et">${esc(b.title)}</div></div><span class="check">✓</span></div>`).join("");
+  let ents=s.entries, extra=0;
+  if(s.placeholder && ents.length>8){ extra=ents.length-8; ents=ents.slice(0,8); }
+  let html=ents.map(e=>entryRow(s,e,curId)).join("");
+  if(extra) html+=`<div class="ent ref"><div class="num">…</div><div><div class="et" style="color:var(--muted);font-weight:500">+${extra} more in the series</div></div></div>`;
+  return html;
+}
 function renderSeries(m){
   const q=norm(query);
   let names=[...new Set(books.filter(b=>b.series).map(b=>b.series))];
@@ -464,23 +507,7 @@ function renderSeries(m){
     const s=seriesMatch(n);
     const auth=s.db?s.db.author:(s.owned[0]?s.owned[0].author:"");
     const pct= s.total? Math.round(100*s.haveCount/s.total):100;
-    const renderEnt = (e)=>{
-      const up = e.status==="upcoming";
-      const cls = up?"up":(s.placeholder?"ref":(e.have?"have":"miss"));
-      const tag = up?`<span class="tag u">${esc(e.release_date||"upcoming")}</span>`
-                    :(s.placeholder?"":(e.have?`<span class="check">✓</span>`:`<span class="tag m">missing</span>`));
-      return `<div class="ent ${cls}"><div class="num">${esc(e.index||"•")}</div>
-        <div><div class="et">${esc(e.title)}</div>${e.year||e.release_date?`<div class="ey">${esc(up?("Releases "+(e.release_date||"TBA")):e.year)}</div>`:""}</div>${tag}</div>`;
-    };
-    let entriesHTML;
-    if(s.db){
-      let ents=s.entries, extra=0;
-      if(s.placeholder && ents.length>8){ extra=ents.length-8; ents=ents.slice(0,8); }
-      entriesHTML=ents.map(renderEnt).join("");
-      if(extra) entriesHTML+=`<div class="ent ref"><div class="num">…</div><div><div class="et" style="color:var(--muted);font-weight:500">+${extra} more in the series</div></div></div>`;
-    } else {
-      entriesHTML=s.owned.map(b=>`<div class="ent have"><div class="num">•</div><div><div class="et">${esc(b.title)}</div></div><span class="check">✓</span></div>`).join("");
-    }
+    const entriesHTML=seriesEntriesHTML(s, null);
     const upCount = s.upcoming? s.upcoming.length:0;
     const progHTML = s.placeholder
       ? `<div class="prog"><div class="pl" style="background:#efe7d6;color:var(--muted);padding:3px 10px;border-radius:20px">several volumes owned</div></div>`
@@ -510,15 +537,14 @@ function openBook(id){
   let seriesBlock="";
   if(b.series){
     const s=seriesMatch(b.series);
-    if(s.db && !s.placeholder){
-      seriesBlock=`<div class="sect"><h4>Series</h4><div class="miniprog">
-        <b>${esc(b.series)}</b> — ${s.haveCount} of ${s.total} owned
-        <div class="bar" style="margin-top:8px"><i style="width:${Math.round(100*s.haveCount/Math.max(1,s.total))}%"></i></div>
-        ${s.upcoming&&s.upcoming.length?`<div style="margin-top:8px;font-size:12px;color:var(--up)"><b>Coming:</b> ${s.upcoming.map(e=>esc(e.title)+(e.release_date?" ("+esc(e.release_date)+")":"")).join(", ")}</div>`:""}
-      </div></div>`;
-    } else {
-      seriesBlock=`<div class="sect"><h4>Series</h4><div class="miniprog"><b>${esc(b.series)}</b><div style="font-size:12px;color:var(--muted);margin-top:4px">Several volumes owned.</div></div></div>`;
-    }
+    const head = s.placeholder
+      ? `<div class="miniprog"><b>${esc(b.series)}</b> · several volumes owned<div class="subnote">Import your Libib list to mark exactly which ones you have.</div></div>`
+      : `<div class="miniprog"><b>${esc(b.series)}</b> — ${s.haveCount} of ${s.total} owned
+          <div class="bar" style="margin-top:8px"><i style="width:${Math.round(100*s.haveCount/Math.max(1,s.total))}%"></i></div>
+          ${s.upcoming&&s.upcoming.length?`<div class="subnote" style="color:var(--up)"><b>Coming:</b> ${s.upcoming.map(e=>esc(e.title)+(e.release_date?" ("+esc(e.release_date)+")":"")).join(", ")}</div>`:""}</div>`;
+    seriesBlock=`<div class="sect"><h4>In this series ${s.db&&!s.placeholder?`· tap a title you own to open it`:""}</h4>
+      ${head}
+      <div class="entries" style="margin-top:10px">${seriesEntriesHTML(s, b.id)}</div></div>`;
   }
   document.getElementById("sheetbody").innerHTML=`
     <div class="dtop">
