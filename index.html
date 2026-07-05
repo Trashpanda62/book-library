@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#5b7263">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Our Library</title>
+<style>
+:root{
+  --paper:#f5f1e8; --card:#fffdf8; --ink:#2b2b28; --muted:#7d786c;
+  --sage:#5b7263; --sage-dark:#425146; --sage-light:#8ca392; --line:#e4ddcd;
+  --accent:#b8683f; --up:#8a6d3b; --shadow:0 2px 8px rgba(60,50,30,.10);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  background:var(--paper);color:var(--ink);font-size:15px;line-height:1.4;
+  padding-bottom:env(safe-area-inset-bottom)}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+a{color:var(--sage);text-decoration:none}
+img{display:block}
+
+/* header */
+header{position:sticky;top:0;z-index:50;background:var(--sage);color:#fff;
+  padding:calc(env(safe-area-inset-top) + 10px) 12px 8px;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+.hrow{display:flex;align-items:center;gap:10px}
+.brand{font-weight:700;font-size:18px;letter-spacing:.2px;display:flex;align-items:baseline;gap:8px}
+.brand .cnt{font-size:12px;font-weight:500;opacity:.85}
+.gear{margin-left:auto;font-size:20px;width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.14)}
+.searchwrap{margin-top:8px;position:relative}
+.searchwrap input{width:100%;padding:9px 12px 9px 34px;border-radius:20px;border:none;
+  font-size:15px;background:rgba(255,255,255,.95);color:var(--ink)}
+.searchwrap svg{position:absolute;left:11px;top:9px;width:16px;height:16px;opacity:.5}
+.tabs{display:flex;gap:4px;margin-top:9px;background:rgba(255,255,255,.12);padding:3px;border-radius:12px}
+.tabs button{flex:1;padding:7px 4px;border-radius:9px;font-size:12.5px;font-weight:600;color:#fff;opacity:.8}
+.tabs button.on{background:var(--card);color:var(--sage-dark);opacity:1;box-shadow:var(--shadow)}
+.sortbar{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12.5px;color:rgba(255,255,255,.9)}
+.sortbar select{background:rgba(255,255,255,.95);color:var(--ink);border:none;border-radius:8px;
+  padding:5px 8px;font-size:12.5px;font-family:inherit}
+
+main{padding:12px 12px 40px;max-width:820px;margin:0 auto}
+
+/* covers grid */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(min-width:520px){.grid{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:700px){.grid{grid-template-columns:repeat(5,1fr)}}
+.bcard{background:var(--card);border-radius:10px;overflow:hidden;box-shadow:var(--shadow);
+  display:flex;flex-direction:column;border:1px solid var(--line)}
+.cover{position:relative;width:100%;aspect-ratio:2/3;background:linear-gradient(135deg,var(--sage-light),var(--sage));
+  overflow:hidden}
+.cover img{width:100%;height:100%;object-fit:cover}
+.cover .ph{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;
+  padding:8px;color:#fff;text-align:center}
+.cover .ph .t{font-size:11px;font-weight:700;line-height:1.25;overflow:hidden;
+  display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical}
+.cover .ph .a{font-size:9px;opacity:.85;margin-top:6px}
+.badge{position:absolute;top:6px;left:6px;background:var(--sage-dark);color:#fff;font-size:9.5px;
+  font-weight:700;padding:2px 6px;border-radius:20px}
+.badge.multi{background:var(--accent)}
+.binfo{padding:6px 7px 8px}
+.binfo .bt{font-size:11.5px;font-weight:600;line-height:1.2;overflow:hidden;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.binfo .ba{font-size:10px;color:var(--muted);margin-top:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+
+/* grouped list (authors/genres) */
+.group{margin-bottom:8px;background:var(--card);border-radius:12px;border:1px solid var(--line);
+  overflow:hidden;box-shadow:var(--shadow)}
+.ghead{display:flex;align-items:center;gap:8px;padding:11px 13px;font-weight:700;cursor:pointer}
+.ghead .gc{margin-left:auto;font-size:12px;color:var(--muted);font-weight:600}
+.ghead .chev{transition:transform .2s;color:var(--sage);font-size:13px}
+.group.open .chev{transform:rotate(90deg)}
+.glist{display:none;padding:0 6px 8px}
+.group.open .glist{display:block}
+.row{display:flex;gap:10px;padding:8px 8px;border-top:1px solid var(--line);align-items:center}
+.row .mini{width:34px;height:51px;border-radius:4px;flex:none;background:var(--sage-light);
+  overflow:hidden;position:relative}
+.row .mini img{width:100%;height:100%;object-fit:cover}
+.row .mini .mph{position:absolute;inset:0;font-size:8px;color:#fff;padding:3px;font-weight:700;
+  overflow:hidden;line-height:1.1}
+.row .rt{font-size:13.5px;font-weight:600;line-height:1.25}
+.row .rs{font-size:11.5px;color:var(--muted);margin-top:2px}
+
+/* series view */
+.scard{background:var(--card);border-radius:14px;border:1px solid var(--line);box-shadow:var(--shadow);
+  padding:13px 14px 14px;margin-bottom:12px}
+.scard h3{margin:0;font-size:16px}
+.scard .sauth{font-size:12px;color:var(--muted);margin-top:1px}
+.prog{display:flex;align-items:center;gap:9px;margin:10px 0 4px}
+.bar{flex:1;height:8px;background:var(--line);border-radius:8px;overflow:hidden}
+.bar > i{display:block;height:100%;background:var(--sage);border-radius:8px}
+.prog .pl{font-size:12px;font-weight:700;color:var(--sage-dark);white-space:nowrap}
+.snote{font-size:11.5px;color:var(--muted);margin-top:2px;font-style:italic}
+.entries{margin-top:11px;display:flex;flex-direction:column;gap:2px}
+.ent{display:flex;align-items:center;gap:9px;padding:6px 4px;border-radius:8px}
+.ent .num{width:22px;height:22px;border-radius:6px;background:var(--line);color:var(--muted);
+  font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none}
+.ent.have{background:rgba(91,114,99,.09)}
+.ent.have .num{background:var(--sage);color:#fff}
+.ent.up .num{background:var(--up);color:#fff}
+.ent .et{font-size:13px;font-weight:600;line-height:1.2}
+.ent.miss .et{color:var(--muted);font-weight:500}
+.ent .ey{font-size:11px;color:var(--muted)}
+.ent .tag{margin-left:auto;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;flex:none}
+.tag.h{background:var(--sage);color:#fff}
+.tag.m{background:#efe7d6;color:var(--muted)}
+.tag.u{background:var(--up);color:#fff}
+.check{margin-left:auto;flex:none;color:var(--sage);font-size:15px}
+
+/* detail sheet */
+.scrim{position:fixed;inset:0;background:rgba(30,26,18,.5);z-index:100;opacity:0;
+  pointer-events:none;transition:opacity .2s}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:101;background:var(--paper);
+  border-radius:18px 18px 0 0;max-height:92vh;overflow-y:auto;transform:translateY(102%);
+  transition:transform .28s cubic-bezier(.2,.8,.2,1);padding-bottom:calc(env(safe-area-inset-bottom) + 20px)}
+.sheet.on{transform:translateY(0)}
+.grab{width:40px;height:5px;border-radius:5px;background:var(--line);margin:9px auto 4px}
+.dtop{display:flex;gap:14px;padding:8px 16px 4px}
+.dcover{width:104px;flex:none;aspect-ratio:2/3;border-radius:9px;overflow:hidden;box-shadow:var(--shadow);
+  background:var(--sage-light);position:relative}
+.dcover img{width:100%;height:100%;object-fit:cover}
+.dmeta h2{margin:2px 0 3px;font-size:19px;line-height:1.2}
+.dmeta .dau{font-size:14px;color:var(--sage-dark);font-weight:600}
+.dmeta .drow{font-size:12.5px;color:var(--muted);margin-top:6px}
+.dmeta .pill{display:inline-block;background:#efe7d6;color:var(--muted);font-size:11px;font-weight:600;
+  padding:3px 9px;border-radius:20px;margin:6px 6px 0 0}
+.dnotes{padding:8px 16px 0;font-size:12.5px;color:var(--muted);font-style:italic}
+.sect{padding:14px 16px 0}
+.sect h4{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--sage-dark)}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.buy{display:flex;flex-direction:column;padding:10px 12px;background:var(--card);border:1px solid var(--line);
+  border-radius:11px;box-shadow:var(--shadow)}
+.buy .bn{font-weight:700;font-size:13.5px}
+.buy .bk{font-size:11px;color:var(--muted);margin-top:2px}
+.buy.local{border-color:var(--sage-light);background:rgba(91,114,99,.06)}
+.miniprog{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin-top:4px}
+
+/* settings */
+.panel{padding:16px}
+.panel h3{margin:0 0 4px}
+.imp{display:block;width:100%;text-align:center;padding:13px;background:var(--sage);color:#fff;
+  font-weight:700;border-radius:12px;margin-top:12px;font-size:15px}
+.imp.sec{background:var(--card);color:var(--sage-dark);border:1px solid var(--line)}
+.hint{font-size:12.5px;color:var(--muted);margin-top:12px;line-height:1.5;background:var(--card);
+  border:1px solid var(--line);border-radius:12px;padding:12px}
+.hint b{color:var(--ink)}
+.hint ol{margin:6px 0 0;padding-left:18px}
+.empty{text-align:center;color:var(--muted);padding:50px 20px;font-size:14px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);z-index:200;
+  background:var(--sage-dark);color:#fff;padding:11px 18px;border-radius:24px;font-size:13.5px;
+  box-shadow:0 6px 20px rgba(0,0,0,.25);transition:transform .25s;max-width:90vw}
+.toast.on{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<header>
+  <div class="hrow">
+    <div class="brand">Our Library <span class="cnt" id="count"></span></div>
+    <button class="gear" id="gear" aria-label="Settings">&#9881;</button>
+  </div>
+  <div class="searchwrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+    <input id="q" type="search" placeholder="Search title, author, series..." autocomplete="off">
+  </div>
+  <div class="tabs" id="tabs">
+    <button data-v="covers" class="on">Covers</button>
+    <button data-v="series">Series</button>
+    <button data-v="authors">Authors</button>
+    <button data-v="genres">Genres</button>
+  </div>
+  <div class="sortbar" id="sortbar">
+    <span>Sort</span>
+    <select id="sort">
+      <option value="author">Author A–Z</option>
+      <option value="title">Title A–Z</option>
+      <option value="year_new">Year (newest)</option>
+      <option value="year_old">Year (oldest)</option>
+    </select>
+    <span id="viewnote" style="margin-left:auto;opacity:.85"></span>
+  </div>
+</header>
+
+<main id="main"></main>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet"><div class="grab"></div><div id="sheetbody"></div></div>
+<div class="toast" id="toast"></div>
+
+<!-- hidden settings sheet reuses .sheet via id -->
+<script>
+const CATALOG = [{"id": 1, "title": "Nourished Beginnings Baby Food", "author": "Renee Kohley", "genre": "Cookbook", "year": "2016", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Nutrient-dense homemade baby food cookbook; author guess correct. Shelved on fiction bookcase but is nonfiction."}, {"id": 2, "title": "The Lioness", "author": "Chris Bohjalian", "genre": "Historical Fiction", "year": "2022", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "1964 Serengeti safari thriller."}, {"id": 3, "title": "The Musician's Daughter", "author": "Susanne Dunlap", "genre": "Historical Fiction", "year": "2009", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "YA historical mystery set in 18th-century Vienna."}, {"id": 4, "title": "The Persian Pickle Club", "author": "Sandra Dallas", "genre": "Historical Fiction", "year": "1995", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Depression-era Kansas quilting-circle novel."}, {"id": 5, "title": "Diary of a Haunting", "author": "M. Verano", "genre": "Young Adult Horror", "year": "2015", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "medium", "notes": "Likely 'Diary of a Haunting' by M. Verano (found-document YA horror series); spine read as plural. Author is a pseudonym."}, {"id": 6, "title": "The Bookseller's Secret", "author": "Michelle Gable", "genre": "Historical Fiction", "year": "2021", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Novel about Nancy Mitford in WWII London."}, {"id": 7, "title": "A Botanist's Guide to Parties and Poisons", "author": "Kate Khavari", "genre": "Historical Mystery", "year": "2022", "shelf": "Fiction bookcase", "series": "Saffron Everleigh Mysteries", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Saffron Everleigh Mystery #1."}, {"id": 8, "title": "A Botanist's Guide to Flowers and Fatality", "author": "Kate Khavari", "genre": "Historical Mystery", "year": "2023", "shelf": "Fiction bookcase", "series": "Saffron Everleigh Mysteries", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Saffron Everleigh Mystery #2."}, {"id": 9, "title": "It Ends with Us", "author": "Colleen Hoover", "genre": "Romance", "year": "2016", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 10, "title": "Fahrenheit 451", "author": "Ray Bradbury", "genre": "Science Fiction", "year": "1953", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 11, "title": "Jane Eyre", "author": "Charlotte Bronte", "genre": "Classic Literature", "year": "1847", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 12, "title": "A Little Princess", "author": "Frances Hodgson Burnett", "genre": "Children's", "year": "1905", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Expanded from the 1888 novella 'Sara Crewe'."}, {"id": 13, "title": "The Lost Girls", "author": "Heather Young", "genre": "Mystery", "year": "2016", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "medium", "notes": "Debut literary mystery by Heather Young; title is shared by several unrelated books, but the author guess pins this one."}, {"id": 14, "title": "Hard Rain", "author": "Samantha Jayne Allen", "genre": "Mystery", "year": "2023", "shelf": "Fiction bookcase", "series": "Annie McIntyre Mysteries", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Annie McIntyre Mystery #2."}, {"id": 15, "title": "The Silkworm", "author": "Robert Galbraith", "genre": "Crime Fiction", "year": "2014", "shelf": "Fiction bookcase", "series": "Cormoran Strike", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Cormoran Strike #2; Robert Galbraith is the pen name of J.K. Rowling"}, {"id": 16, "title": "A Painted House", "author": "John Grisham", "genre": "Literary Fiction", "year": "2001", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Coming-of-age novel, a departure from Grisham's legal thrillers"}, {"id": 17, "title": "Winter Garden", "author": "Kristin Hannah", "genre": "Historical Fiction", "year": "2010", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 18, "title": "Shiver", "author": "Lisa Jackson", "genre": "Thriller", "year": "2006", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "medium", "notes": "Title is ambiguous (also a Maggie Stiefvater YA novel); Lisa Jackson's is a New Orleans thriller, kept per author_guess"}, {"id": 19, "title": "The Seven Husbands of Evelyn Hugo", "author": "Taylor Jenkins Reid", "genre": "Historical Fiction", "year": "2017", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 20, "title": "The Gravedigger's Daughter", "author": "Joyce Carol Oates", "genre": "Literary Fiction", "year": "2007", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 21, "title": "The Summons", "author": "John Grisham", "genre": "Legal Thriller", "year": "2002", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 22, "title": "The Broker", "author": "John Grisham", "genre": "Legal Thriller", "year": "2005", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "More of a political/espionage thriller than strictly legal"}, {"id": 23, "title": "Roots: The Saga of an American Family", "author": "Alex Haley", "genre": "Historical Fiction", "year": "1976", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 24, "title": "The Four Winds", "author": "Kristin Hannah", "genre": "Historical Fiction", "year": "2021", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 25, "title": "The Forest of Vanishing Stars", "author": "Kristin Harmel", "genre": "Historical Fiction", "year": "2021", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 26, "title": "The House of the Seven Gables", "author": "Nathaniel Hawthorne", "genre": "Classic Literature", "year": "1851", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 27, "title": "All Creatures Great and Small", "author": "James Herriot", "genre": "Memoir", "year": "1972", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Semi-autobiographical veterinary memoir; 1972 is the US omnibus edition"}, {"id": 28, "title": "Bite Me! Low-Calorie High-Protein Cooking", "author": "Will Tennyson", "genre": "Cookbook", "year": "", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "low", "notes": "Could not confidently verify a published cookbook by this exact title/author; Will Tennyson is a fitness YouTuber, publication unconfirmed"}, {"id": 29, "title": "The Last Templar", "author": "Raymond Khoury", "genre": "Thriller", "year": "2005", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 30, "title": "Babel: Or the Necessity of Violence", "author": "R.F. Kuang", "genre": "Historical Fantasy", "year": "2022", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Full title: Babel, or the Necessity of Violence: An Arcane History of the Oxford Translators' Revolution"}, {"id": 31, "title": "Daughters of Shandong", "author": "Eve J. Chung", "genre": "Historical Fiction", "year": "2024", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 32, "title": "Gentlemen and Players", "author": "Joanne Harris", "genre": "Psychological Thriller", "year": "2005", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 33, "title": "Lost Roses", "author": "Martha Hall Kelly", "genre": "Historical Fiction", "year": "2019", "shelf": "Fiction bookcase", "series": "Woolsey Family", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Prequel to Lilac Girls"}, {"id": 34, "title": "The Trouble with Goats and Sheep", "author": "Joanna Cannon", "genre": "Literary Fiction", "year": "2016", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 35, "title": "Belgravia", "author": "Julian Fellowes", "genre": "Historical Fiction", "year": "2016", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Full title: Julian Fellowes's Belgravia"}, {"id": 36, "title": "The Woman in the Library", "author": "Sulari Gentill", "genre": "Mystery", "year": "2022", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 37, "title": "The Book Charmer", "author": "Karen Hawkins", "genre": "Contemporary Fiction", "year": "2019", "shelf": "Fiction bookcase", "series": "Dove Pond", "placeholder": false, "isbn": "", "confidence": "high", "notes": "First in the Dove Pond series"}, {"id": 38, "title": "Vax Facts", "author": "Paul Thomas", "genre": "Health Nonfiction", "year": "2022", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "medium", "notes": "Nonfiction shelved on the fiction bookcase; full title: Vax Facts: A Parent's Guide to Making Vaccine Choices (Paul Thomas MD). Confidence medium on exact edition/year."}, {"id": 39, "title": "The Kitchen Front", "author": "Jennifer Ryan", "genre": "Historical Fiction", "year": "2021", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 40, "title": "The House in the Pines", "author": "Ana Reyes", "genre": "Thriller", "year": "2023", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 41, "title": "The Rose Code", "author": "Kate Quinn", "genre": "Historical Fiction", "year": "2021", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 42, "title": "The English Wife", "author": "Lauren Willig", "genre": "Historical Fiction", "year": "2018", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 43, "title": "Atlas Shrugged", "author": "Ayn Rand", "genre": "Philosophical Fiction", "year": "1957", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 44, "title": "The Fountainhead", "author": "Ayn Rand", "genre": "Philosophical Fiction", "year": "1943", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 45, "title": "Mitch Rapp series (multiple)", "author": "Vince Flynn", "genre": "Political Thriller", "year": "1999", "shelf": "Fiction bookcase", "series": "Mitch Rapp", "placeholder": true, "isbn": "", "confidence": "high", "notes": "Series began with Transfer of Power (1999); later entries by Kyle Mills; several volumes on shelf"}, {"id": 46, "title": "Women's Murder Club series (multiple)", "author": "James Patterson", "genre": "Mystery Thriller", "year": "2001", "shelf": "Fiction bookcase", "series": "Women's Murder Club", "placeholder": true, "isbn": "", "confidence": "high", "notes": "Series began with 1st to Die (2001); several volumes on shelf"}, {"id": 47, "title": "Jodi Picoult novels (multiple)", "author": "Jodi Picoult", "genre": "Contemporary Fiction", "year": "1992", "shelf": "Fiction bookcase", "series": "", "placeholder": true, "isbn": "", "confidence": "high", "notes": "Debut Songs of the Humpback Whale (1992); several volumes on shelf"}, {"id": 48, "title": "Code of Conduct", "author": "Brad Thor", "genre": "Political Thriller", "year": "2015", "shelf": "Fiction bookcase", "series": "Scot Harvath", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Scot Harvath series"}, {"id": 49, "title": "Foreign Agent", "author": "Brad Thor", "genre": "Political Thriller", "year": "2016", "shelf": "Fiction bookcase", "series": "Scot Harvath", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Scot Harvath series"}, {"id": 50, "title": "Rising Tiger", "author": "Brad Thor", "genre": "Political Thriller", "year": "2022", "shelf": "Fiction bookcase", "series": "Scot Harvath", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Scot Harvath series"}, {"id": 51, "title": "Op-Center / EndWar (multiple)", "author": "Tom Clancy", "genre": "Military Thriller", "year": "1995", "shelf": "Fiction bookcase", "series": "Tom Clancy's Op-Center", "placeholder": true, "isbn": "", "confidence": "high", "notes": "Tom Clancy branded/co-authored series; Op-Center began 1995, EndWar tie-in novels 2008+; several volumes on shelf"}, {"id": 52, "title": "Stephen King novels (multiple)", "author": "Stephen King", "genre": "Horror", "year": "1974", "shelf": "Fiction bookcase", "series": "", "placeholder": true, "isbn": "", "confidence": "high", "notes": "Debut novel Carrie (1974); several volumes on shelf"}, {"id": 53, "title": "Ameritopia: The Unmaking of America", "author": "Mark R. Levin", "genre": "Political Commentary", "year": "2012", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Nonfiction shelved in fiction bookcase"}, {"id": 54, "title": "The Art of War", "author": "Sun Tzu", "genre": "Military Strategy", "year": "-500", "shelf": "Fiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Ancient Chinese text, ~5th century BC; year approximate"}, {"id": 55, "title": "Jane Austen collection", "author": "Jane Austen", "genre": "Classic Literature", "year": "1811", "shelf": "Fiction bookcase", "series": "", "placeholder": true, "isbn": "", "confidence": "high", "notes": "Collected works; first novel Sense and Sensibility published 1811"}, {"id": 56, "title": "Agatha Christie mysteries (multiple)", "author": "Agatha Christie", "genre": "Mystery", "year": "1920", "shelf": "Fiction bookcase", "series": "Hercule Poirot", "placeholder": true, "isbn": "", "confidence": "high", "notes": "Debut The Mysterious Affair at Styles (1920); several volumes on shelf"}, {"id": 57, "title": "Good to Great: Why Some Companies Make the Leap... and Others Don't", "author": "Jim Collins", "genre": "Business", "year": "2001", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 58, "title": "Grit: The Power of Passion and Perseverance", "author": "Angela Duckworth", "genre": "Psychology", "year": "2016", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 59, "title": "Outliers: The Story of Success", "author": "Malcolm Gladwell", "genre": "Psychology", "year": "2008", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 60, "title": "Go Put Your Strengths to Work: 6 Powerful Steps to Achieve Outstanding Performance", "author": "Marcus Buckingham", "genre": "Business", "year": "2007", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 61, "title": "12 Rules for Life: An Antidote to Chaos", "author": "Jordan B. Peterson", "genre": "Self-Help", "year": "2018", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 62, "title": "Come As You Are: The Surprising New Science That Will Transform Your Sex Life", "author": "Emily Nagoski", "genre": "Psychology", "year": "2015", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 63, "title": "Blind Spots: When Medicine Gets It Wrong, and What It Means for Our Health", "author": "Marty Makary", "genre": "Health", "year": "2024", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Marty Makary title; distinct from other books sharing this common name"}, {"id": 64, "title": "Domesticated: Evolution in a Man-Made World", "author": "Richard C. Francis", "genre": "Science", "year": "2015", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 65, "title": "Good Energy: The Surprising Connection Between Metabolism and Limitless Health", "author": "Casey Means", "genre": "Health", "year": "2024", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Co-authored with Calley Means"}, {"id": 66, "title": "The Black Arts: A Concise History of Witchcraft, Demonology, Astrology, and Other Mystical Practices Throughout the Ages", "author": "Richard Cavendish", "genre": "Occult", "year": "1967", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 67, "title": "Midnight in the Garden of Good and Evil", "author": "John Berendt", "genre": "True Crime", "year": "1994", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 68, "title": "Sold", "author": "Patricia McCormick", "genre": "Young Adult Fiction", "year": "2006", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Novel in verse; shelved in nonfiction bookcase but the work is fiction"}, {"id": 69, "title": "Killing Jesus: A History", "author": "Bill O'Reilly and Martin Dugard", "genre": "History", "year": "2013", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 70, "title": "The JFK Conspiracy: The Secret Plot to Kill Kennedy--and Why It Failed", "author": "Brad Meltzer and Josh Mensch", "genre": "History", "year": "2025", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Co-authored with Josh Mensch; about the 1960 Chicago plot against JFK"}, {"id": 71, "title": "Red Notice: A True Story of High Finance, Murder, and One Man's Fight for Justice", "author": "Bill Browder", "genre": "Nonfiction", "year": "2015", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 72, "title": "Unmasked: Inside Antifa's Radical Plan to Destroy Democracy", "author": "Andy Ngo", "genre": "Political Commentary", "year": "2021", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 73, "title": "Red-Handed: How American Elites Get Rich Helping China Win", "author": "Peter Schweizer", "genre": "Political Commentary", "year": "2022", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 74, "title": "A Patriot's History of the United States: From Columbus's Great Discovery to the War on Terror", "author": "Larry Schweikart and Michael Allen", "genre": "History", "year": "2004", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "co-authored with Michael Allen"}, {"id": 75, "title": "The Diary of a Young Girl", "author": "Anne Frank", "genre": "Memoir", "year": "1947", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "first published in Dutch as Het Achterhuis"}, {"id": 76, "title": "The Case for Christ", "author": "Lee Strobel", "genre": "Christian Nonfiction", "year": "1998", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 77, "title": "Mere Christianity", "author": "C.S. Lewis", "genre": "Christian Nonfiction", "year": "1952", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 78, "title": "The Complete C.S. Lewis Signature Classics", "author": "C.S. Lewis", "genre": "Christian Nonfiction", "year": "2002", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "omnibus of seven works; collection first published 2002"}, {"id": 79, "title": "Arguing with Socialists", "author": "Glenn Beck", "genre": "Political Commentary", "year": "2020", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 80, "title": "Liars: How Progressives Exploit Our Fears for Power and Control", "author": "Glenn Beck", "genre": "Political Commentary", "year": "2016", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 81, "title": "Addicted to Outrage: How Thinking Like a Recovering Addict Can Heal the Country", "author": "Glenn Beck", "genre": "Political Commentary", "year": "2018", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 82, "title": "Dark Future: Uncovering the Great Reset's Terrifying Next Phase", "author": "Glenn Beck", "genre": "Political Commentary", "year": "2023", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 83, "title": "The Jefferson Lies: Exposing the Myths You've Always Believed About Thomas Jefferson", "author": "David Barton", "genre": "History", "year": "2012", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 84, "title": "Tesla vs Edison: The Life-Long Feud that Electrified the World", "author": "Nigel Cawthorne", "genre": "Biography", "year": "2016", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "medium", "notes": "title matches the Nigel Cawthorne book; multiple similarly-titled works exist so identity is not certain"}, {"id": 85, "title": "Ghost Wars: The Secret History of the CIA, Afghanistan, and Bin Laden, from the Soviet Invasion to September 10, 2001", "author": "Steve Coll", "genre": "History", "year": "2004", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Pulitzer Prize winner for General Nonfiction"}, {"id": 86, "title": "The Journal of Major George Washington", "author": "George Washington", "genre": "History", "year": "1754", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Washington's 1753-54 mission journal to the Ohio Country; commonly reprinted in facsimile"}, {"id": 87, "title": "The Radium Girls: The Dark Story of America's Shining Women", "author": "Kate Moore", "genre": "History", "year": "2016", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "First UK edition 2016; US edition 2017"}, {"id": 88, "title": "Chaos: Charles Manson, the CIA, and the Secret History of the Sixties", "author": "Tom O'Neill", "genre": "True Crime", "year": "2019", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Co-written with Dan Piepenbring"}, {"id": 89, "title": "Disinformation: Former Spy Chief Reveals Secret Strategies for Undermining Freedom, Attacking Religion, and Promoting Terrorism", "author": "Ion Mihai Pacepa and Ronald J. Rychlak", "genre": "Political Commentary", "year": "2013", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "medium", "notes": "Title is common; most likely the 2013 Pacepa/Rychlak book given the shelf's intelligence/CIA theme, but title alone is ambiguous"}, {"id": 90, "title": "Blindsided", "author": "", "genre": "Uncategorized", "year": "", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "low", "notes": "Title too common (many books titled Blindsided) to identify the specific work with confidence"}, {"id": 91, "title": "On the Wild Edge: In Search of a Natural Life", "author": "David Petersen", "genre": "Memoir", "year": "2005", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "medium", "notes": "Most likely David Petersen's nature memoir; fits the homesteading/outdoor theme of the shelf but title alone is not unique"}, {"id": 92, "title": "The Foxfire Book", "author": "Eliot Wigginton", "genre": "Homesteading", "year": "1972", "shelf": "Nonfiction bookcase", "series": "Foxfire", "placeholder": true, "isbn": "", "confidence": "high", "notes": "Foxfire series of Appalachian folk-skills books; edited by Wigginton, first volume 1972; likely several volumes"}, {"id": 93, "title": "Homesteading from Scratch", "author": "", "genre": "Homesteading", "year": "", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "low", "notes": "Common self-published homesteading title; cannot confidently pin the specific author or year"}, {"id": 94, "title": "Practical Blacksmithing", "author": "M.T. Richardson", "genre": "Blacksmithing", "year": "1889", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Originally published in four volumes 1889-1891; commonly reprinted as a single compiled edition"}, {"id": 95, "title": "Heirloom Skills: A Complete Guide to Modern Homesteading", "author": "Kelsey Steffen", "genre": "Homesteading", "year": "2023", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "low", "notes": "Likely the modern homesteading guide by Kelsey Steffen, but not certain of the exact author/year"}, {"id": 96, "title": "The Self-Sufficient Life and How to Live It", "author": "John Seymour", "genre": "Homesteading", "year": "1976", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Updated/retitled edition of Seymour's classic 'The Complete Book of Self-Sufficiency' (1976)"}, {"id": 97, "title": "Goat Medicine", "author": "Mary C. Smith and David M. Sherman", "genre": "Veterinary Reference", "year": "1994", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Standard veterinary reference; 2nd edition 2009"}, {"id": 98, "title": "Plantopedia: The Definitive Guide to House Plants", "author": "Lauren Camilleri and Sophia Kaplan", "genre": "Gardening", "year": "2020", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "By the Leaf Supply authors (Camilleri & Kaplan)"}, {"id": 99, "title": "National Parks", "author": "", "genre": "Nonfiction", "year": "", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "low", "notes": "Generic title matches many books (e.g. National Geographic Guide to National Parks, The National Parks: America's Best Idea); cannot confidently identify which edition/author from title alone"}, {"id": 100, "title": "Ball Complete Book of Home Preserving", "author": "Judi Kingry and Lauren Devine", "genre": "Cookbook", "year": "2006", "shelf": "Nonfiction bookcase", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Editors Judi Kingry and Lauren Devine; canning/preserving reference"}, {"id": 101, "title": "The Tale of Peter Rabbit", "author": "Beatrix Potter", "genre": "Children's", "year": "1902", "shelf": "Children's (top shelf)", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 102, "title": "Charlotte's Web", "author": "E.B. White", "genre": "Children's", "year": "1952", "shelf": "Children's (top shelf)", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 103, "title": "The Complete Tales of Winnie-the-Pooh", "author": "A.A. Milne", "genre": "Children's", "year": "1926", "shelf": "Children's (top shelf)", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Collects Winnie-the-Pooh (1926) and The House at Pooh Corner (1928); year given is first Pooh book"}, {"id": 104, "title": "Horton Hatches the Egg", "author": "Dr. Seuss", "genre": "Children's", "year": "1940", "shelf": "Children's (top shelf)", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 105, "title": "Where the Sidewalk Ends", "author": "Shel Silverstein", "genre": "Children's Poetry", "year": "1974", "shelf": "Children's (top shelf)", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 106, "title": "Every Thing On It", "author": "Shel Silverstein", "genre": "Children's Poetry", "year": "2011", "shelf": "Children's (top shelf)", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Posthumous poetry collection"}, {"id": 107, "title": "Go, Dog. Go!", "author": "P.D. Eastman", "genre": "Children's", "year": "1961", "shelf": "Children's (top shelf)", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": ""}, {"id": 108, "title": "Bedtime Stories", "author": "", "genre": "Children's", "year": "", "shelf": "Children's (top shelf)", "series": "", "placeholder": false, "isbn": "", "confidence": "low", "notes": "Generic anthology title used by many publishers; cannot identify a specific book or author from title alone"}, {"id": 109, "title": "House of Secrets", "author": "Chris Columbus and Ned Vizzini", "genre": "Children's Fantasy", "year": "2013", "shelf": "Children's (top shelf)", "series": "House of Secrets", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Middle-grade fantasy; first in the House of Secrets series"}, {"id": 110, "title": "The Bobbsey Twins in the Country", "author": "Laura Lee Hope", "genre": "Children's", "year": "1907", "shelf": "Children's (top shelf)", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "\"Laura Lee Hope\" is a Stratemeyer Syndicate house pseudonym; second Bobbsey Twins book"}, {"id": 111, "title": "The Random House Book of Mother Goose", "author": "Arnold Lobel", "genre": "Children's", "year": "1986", "shelf": "Children's (top shelf)", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Selected and illustrated by Arnold Lobel"}, {"id": 112, "title": "Hans Christian Andersen's Fairy Tales", "author": "Hans Christian Andersen", "genre": "Children's", "year": "1835", "shelf": "Children's (top shelf)", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Collection; Andersen's first fairy tale booklet appeared 1835"}, {"id": 113, "title": "The Foot Book", "author": "Dr. Seuss", "genre": "Children's", "year": "1968", "shelf": "Children's (top shelf)", "series": "", "placeholder": false, "isbn": "", "confidence": "high", "notes": "Dr. Seuss's Book of Wonderful Noises; Bright and Early Books beginner reader"}, {"id": 114, "title": "My Feet Go", "author": "", "genre": "Children's", "year": "", "shelf": "Children's (top shelf)", "series": "", "placeholder": false, "isbn": "", "confidence": "low", "notes": "Could not confidently identify a single canonical book/author from this short title; multiple children's board books share similar titles"}, {"id": 115, "title": "The Works of Will Carleton", "author": "Will Carleton", "genre": "Poetry", "year": "", "shelf": "Children's (top shelf)", "series": "", "placeholder": false, "isbn": "", "confidence": "medium", "notes": "Will Carleton (1845-1912), American poet known for 'Farm Ballads'; this is a collected-works volume, exact edition/first-published year uncertain"}];
+const SERIES_DB = {"Saffron Everleigh Mysteries": {"author": "Kate Khavari", "total_published": "5", "note": "Book 5 (June 2026) reported as the final entry; all titles share the \"A Botanist's Guide to...\" format.", "entries": [{"index": "1", "title": "A Botanist's Guide to Parties and Poisons", "year": "2022", "status": "published", "release_date": ""}, {"index": "2", "title": "A Botanist's Guide to Flowers and Fatality", "year": "2023", "status": "published", "release_date": ""}, {"index": "3", "title": "A Botanist's Guide to Society and Secrets", "year": "2024", "status": "published", "release_date": ""}, {"index": "4", "title": "A Botanist's Guide to Rituals and Revenge", "year": "2025", "status": "published", "release_date": ""}, {"index": "5", "title": "A Botanist's Guide to Tradition and Treachery", "year": "2026", "status": "published", "release_date": ""}]}, "Cormoran Strike": {"author": "Robert Galbraith (J.K. Rowling)", "total_published": "8", "note": "Ongoing detective series by J.K. Rowling under the Robert Galbraith pen name; long novels published roughly yearly. Entry #8 title confirmed to near cutoff; verify current release status.", "entries": [{"index": "1", "title": "The Cuckoo's Calling", "year": "2013", "status": "published", "release_date": ""}, {"index": "2", "title": "The Silkworm", "year": "2014", "status": "published", "release_date": ""}, {"index": "3", "title": "Career of Evil", "year": "2015", "status": "published", "release_date": ""}, {"index": "4", "title": "Lethal White", "year": "2018", "status": "published", "release_date": ""}, {"index": "5", "title": "Troubled Blood", "year": "2020", "status": "published", "release_date": ""}, {"index": "6", "title": "The Ink Black Heart", "year": "2022", "status": "published", "release_date": ""}, {"index": "7", "title": "The Running Grave", "year": "2023", "status": "published", "release_date": ""}, {"index": "8", "title": "The Hallmark of Death", "year": "2025", "status": "published", "release_date": ""}]}, "Annie McIntyre Mysteries": {"author": "Samantha Jayne Allen", "total_published": "3", "note": "Series appears ongoing; no confirmed 4th book announced as of early 2026.", "entries": [{"index": "1", "title": "Pay Dirt Road", "year": "2022", "status": "published", "release_date": ""}, {"index": "2", "title": "Hard Rain", "year": "2023", "status": "published", "release_date": ""}, {"index": "3", "title": "Next of Kin", "year": "2024", "status": "published", "release_date": ""}]}, "Dove Pond": {"author": "Karen Hawkins", "total_published": "6", "note": "4 numbered novels plus 2 companion novellas (Love in the Afternoon #0.5, The Last Chance Motel #1.5); no confirmed upcoming entry as of early 2026.", "entries": [{"index": "", "title": "Love in the Afternoon", "year": "2019", "status": "published", "release_date": ""}, {"index": "1", "title": "The Book Charmer", "year": "2019", "status": "published", "release_date": ""}, {"index": "", "title": "The Last Chance Motel", "year": "2020", "status": "published", "release_date": ""}, {"index": "2", "title": "A Cup of Silver Linings", "year": "2021", "status": "published", "release_date": ""}, {"index": "3", "title": "The Secret Recipe of Ella Dove", "year": "2023", "status": "published", "release_date": ""}, {"index": "4", "title": "The Bookshop of Hidden Dreams", "year": "2024", "status": "published", "release_date": ""}]}, "House of Secrets": {"author": "Chris Columbus and Ned Vizzini", "total_published": "3", "note": "Series concluded; book 3 co-written with Chris Rylander after Ned Vizzini's death.", "entries": [{"index": "1", "title": "House of Secrets", "year": "2013", "status": "published", "release_date": ""}, {"index": "2", "title": "Battle of the Beasts", "year": "2014", "status": "published", "release_date": ""}, {"index": "3", "title": "Clash of the Worlds", "year": "2016", "status": "published", "release_date": ""}]}, "Mitch Rapp": {"author": "Vince Flynn (continued by Kyle Mills, then Don Bentley)", "total_published": "23", "note": "Publication order shown; prequels American Assassin/Kill Shot are earliest chronologically. Written by Flynn through 2012, Kyle Mills 2015-2022, Don Bentley from 2023.", "entries": [{"index": "1", "title": "American Assassin", "year": "2010", "status": "published", "release_date": ""}, {"index": "2", "title": "Kill Shot", "year": "2012", "status": "published", "release_date": ""}, {"index": "3", "title": "Transfer of Power", "year": "1999", "status": "published", "release_date": ""}, {"index": "4", "title": "The Third Option", "year": "2000", "status": "published", "release_date": ""}, {"index": "5", "title": "Separation of Power", "year": "2001", "status": "published", "release_date": ""}, {"index": "6", "title": "Executive Power", "year": "2003", "status": "published", "release_date": ""}, {"index": "7", "title": "Memorial Day", "year": "2004", "status": "published", "release_date": ""}, {"index": "8", "title": "Consent to Kill", "year": "2005", "status": "published", "release_date": ""}, {"index": "9", "title": "Act of Treason", "year": "2006", "status": "published", "release_date": ""}, {"index": "10", "title": "Protect and Defend", "year": "2007", "status": "published", "release_date": ""}, {"index": "11", "title": "Extreme Measures", "year": "2008", "status": "published", "release_date": ""}, {"index": "12", "title": "Pursuit of Honor", "year": "2009", "status": "published", "release_date": ""}, {"index": "13", "title": "The Last Man", "year": "2012", "status": "published", "release_date": ""}, {"index": "14", "title": "The Survivor", "year": "2015", "status": "published", "release_date": ""}, {"index": "15", "title": "Order to Kill", "year": "2016", "status": "published", "release_date": ""}, {"index": "16", "title": "Enemy of the State", "year": "2017", "status": "published", "release_date": ""}, {"index": "17", "title": "Red War", "year": "2018", "status": "published", "release_date": ""}, {"index": "18", "title": "Lethal Agent", "year": "2019", "status": "published", "release_date": ""}, {"index": "19", "title": "Total Power", "year": "2020", "status": "published", "release_date": ""}, {"index": "20", "title": "Enemy at the Gates", "year": "2021", "status": "published", "release_date": ""}, {"index": "21", "title": "Oath of Loyalty", "year": "2022", "status": "published", "release_date": ""}, {"index": "22", "title": "Code Red", "year": "2023", "status": "published", "release_date": ""}, {"index": "23", "title": "Capture or Kill", "year": "2024", "status": "published", "release_date": ""}]}, "Scot Harvath": {"author": "Brad Thor", "total_published": "24", "note": "Long-running series; ordered by publication. All family-owned titles (Code of Conduct #14, Foreign Agent #16, Rising Tiger #21) included.", "entries": [{"index": "1", "title": "The Lions of Lucerne", "year": "2002", "status": "published", "release_date": ""}, {"index": "2", "title": "Path of the Assassin", "year": "2003", "status": "published", "release_date": ""}, {"index": "3", "title": "State of the Union", "year": "2004", "status": "published", "release_date": ""}, {"index": "4", "title": "Blowback", "year": "2005", "status": "published", "release_date": ""}, {"index": "5", "title": "Takedown", "year": "2006", "status": "published", "release_date": ""}, {"index": "6", "title": "The First Commandment", "year": "2007", "status": "published", "release_date": ""}, {"index": "7", "title": "The Last Patriot", "year": "2008", "status": "published", "release_date": ""}, {"index": "8", "title": "The Apostle", "year": "2009", "status": "published", "release_date": ""}, {"index": "9", "title": "Foreign Influence", "year": "2010", "status": "published", "release_date": ""}, {"index": "10", "title": "The Athena Project", "year": "2010", "status": "published", "release_date": ""}, {"index": "11", "title": "Full Black", "year": "2011", "status": "published", "release_date": ""}, {"index": "12", "title": "Black List", "year": "2012", "status": "published", "release_date": ""}, {"index": "13", "title": "Hidden Order", "year": "2013", "status": "published", "release_date": ""}, {"index": "14", "title": "Act of War", "year": "2014", "status": "published", "release_date": ""}, {"index": "15", "title": "Code of Conduct", "year": "2015", "status": "published", "release_date": ""}, {"index": "16", "title": "Foreign Agent", "year": "2016", "status": "published", "release_date": ""}, {"index": "17", "title": "Use of Force", "year": "2017", "status": "published", "release_date": ""}, {"index": "18", "title": "Spymaster", "year": "2018", "status": "published", "release_date": ""}, {"index": "19", "title": "Backlash", "year": "2019", "status": "published", "release_date": ""}, {"index": "20", "title": "Near Dark", "year": "2020", "status": "published", "release_date": ""}, {"index": "21", "title": "Black Ice", "year": "2021", "status": "published", "release_date": ""}, {"index": "22", "title": "Rising Tiger", "year": "2022", "status": "published", "release_date": ""}, {"index": "23", "title": "Dead Fall", "year": "2023", "status": "published", "release_date": ""}, {"index": "24", "title": "Shadow of Doubt", "year": "2024", "status": "published", "release_date": ""}]}, "Women's Murder Club": {"author": "James Patterson", "total_published": "24", "note": "Co-authored (Andrew Gross early, then Maxine Paetro, recently Mindy McGinnis); long-running series, list is representative of confirmed entries", "entries": [{"index": "1", "title": "1st to Die", "year": "2001", "status": "published", "release_date": ""}, {"index": "2", "title": "2nd Chance", "year": "2002", "status": "published", "release_date": ""}, {"index": "3", "title": "3rd Degree", "year": "2004", "status": "published", "release_date": ""}, {"index": "4", "title": "4th of July", "year": "2005", "status": "published", "release_date": ""}, {"index": "5", "title": "The 5th Horseman", "year": "2006", "status": "published", "release_date": ""}, {"index": "6", "title": "The 6th Target", "year": "2007", "status": "published", "release_date": ""}, {"index": "7", "title": "7th Heaven", "year": "2008", "status": "published", "release_date": ""}, {"index": "8", "title": "The 8th Confession", "year": "2009", "status": "published", "release_date": ""}, {"index": "9", "title": "The 9th Judgment", "year": "2010", "status": "published", "release_date": ""}, {"index": "10", "title": "10th Anniversary", "year": "2011", "status": "published", "release_date": ""}, {"index": "11", "title": "11th Hour", "year": "2012", "status": "published", "release_date": ""}, {"index": "12", "title": "12th of Never", "year": "2013", "status": "published", "release_date": ""}, {"index": "13", "title": "Unlucky 13", "year": "2014", "status": "published", "release_date": ""}, {"index": "14", "title": "14th Deadly Sin", "year": "2015", "status": "published", "release_date": ""}, {"index": "15", "title": "15th Affair", "year": "2016", "status": "published", "release_date": ""}, {"index": "16", "title": "16th Seduction", "year": "2017", "status": "published", "release_date": ""}, {"index": "17", "title": "The 17th Suspect", "year": "2018", "status": "published", "release_date": ""}, {"index": "18", "title": "The 18th Abduction", "year": "2019", "status": "published", "release_date": ""}, {"index": "19", "title": "The 19th Christmas", "year": "2019", "status": "published", "release_date": ""}, {"index": "20", "title": "20th Victim", "year": "2020", "status": "published", "release_date": ""}, {"index": "21", "title": "21st Birthday", "year": "2021", "status": "published", "release_date": ""}, {"index": "22", "title": "22 Seconds", "year": "2022", "status": "published", "release_date": ""}, {"index": "23", "title": "23 1/2 Lies", "year": "2023", "status": "published", "release_date": ""}, {"index": "24", "title": "The 24th Hour", "year": "2024", "status": "published", "release_date": ""}]}, "Tom Clancy's Op-Center": {"author": "Created by Tom Clancy and Steve Pieczenik; written by Jeff Rovin, Dick Couch, and George Galdorisi", "total_published": "20", "note": "Original 12 by Jeff Rovin (1995-2005); series rebooted 2014, later entries by Dick Couch/George Galdorisi/Jeff Rovin. Latest is Call of Duty (2022).", "entries": [{"index": "1", "title": "Tom Clancy's Op-Center", "year": "1995", "status": "published", "release_date": ""}, {"index": "2", "title": "Mirror Image", "year": "1995", "status": "published", "release_date": ""}, {"index": "3", "title": "Games of State", "year": "1996", "status": "published", "release_date": ""}, {"index": "4", "title": "Acts of War", "year": "1997", "status": "published", "release_date": ""}, {"index": "5", "title": "Balance of Power", "year": "1998", "status": "published", "release_date": ""}, {"index": "6", "title": "State of Siege", "year": "1999", "status": "published", "release_date": ""}, {"index": "7", "title": "Divide and Conquer", "year": "2000", "status": "published", "release_date": ""}, {"index": "8", "title": "Line of Control", "year": "2001", "status": "published", "release_date": ""}, {"index": "9", "title": "Mission of Honor", "year": "2002", "status": "published", "release_date": ""}, {"index": "10", "title": "Sea of Fire", "year": "2003", "status": "published", "release_date": ""}, {"index": "11", "title": "Call to Treason", "year": "2004", "status": "published", "release_date": ""}, {"index": "12", "title": "War of Eagles", "year": "2005", "status": "published", "release_date": ""}, {"index": "13", "title": "Out of the Ashes", "year": "2014", "status": "published", "release_date": ""}, {"index": "14", "title": "Into the Fire", "year": "2015", "status": "published", "release_date": ""}, {"index": "15", "title": "Scorched Earth", "year": "2016", "status": "published", "release_date": ""}, {"index": "16", "title": "Dark Zone", "year": "2017", "status": "published", "release_date": ""}, {"index": "17", "title": "For Honor", "year": "2018", "status": "published", "release_date": ""}, {"index": "18", "title": "Sting of the Wasp", "year": "2019", "status": "published", "release_date": ""}, {"index": "19", "title": "God of War", "year": "2020", "status": "published", "release_date": ""}, {"index": "20", "title": "Call of Duty", "year": "2022", "status": "published", "release_date": ""}]}, "Hercule Poirot": {"author": "Agatha Christie", "total_published": "33", "note": "List covers the 33 Poirot novels in publication order; short-story collections excluded. Series concluded (author died 1976).", "entries": [{"index": "1", "title": "The Mysterious Affair at Styles", "year": "1920", "status": "published", "release_date": ""}, {"index": "2", "title": "The Murder on the Links", "year": "1923", "status": "published", "release_date": ""}, {"index": "3", "title": "The Murder of Roger Ackroyd", "year": "1926", "status": "published", "release_date": ""}, {"index": "4", "title": "The Big Four", "year": "1927", "status": "published", "release_date": ""}, {"index": "5", "title": "The Mystery of the Blue Train", "year": "1928", "status": "published", "release_date": ""}, {"index": "6", "title": "Peril at End House", "year": "1932", "status": "published", "release_date": ""}, {"index": "7", "title": "Lord Edgware Dies", "year": "1933", "status": "published", "release_date": ""}, {"index": "8", "title": "Murder on the Orient Express", "year": "1934", "status": "published", "release_date": ""}, {"index": "9", "title": "Three Act Tragedy", "year": "1935", "status": "published", "release_date": ""}, {"index": "10", "title": "Death in the Clouds", "year": "1935", "status": "published", "release_date": ""}, {"index": "11", "title": "The A.B.C. Murders", "year": "1936", "status": "published", "release_date": ""}, {"index": "12", "title": "Murder in Mesopotamia", "year": "1936", "status": "published", "release_date": ""}, {"index": "13", "title": "Cards on the Table", "year": "1936", "status": "published", "release_date": ""}, {"index": "14", "title": "Dumb Witness", "year": "1937", "status": "published", "release_date": ""}, {"index": "15", "title": "Death on the Nile", "year": "1937", "status": "published", "release_date": ""}, {"index": "16", "title": "Appointment with Death", "year": "1938", "status": "published", "release_date": ""}, {"index": "17", "title": "Hercule Poirot's Christmas", "year": "1938", "status": "published", "release_date": ""}, {"index": "18", "title": "Sad Cypress", "year": "1940", "status": "published", "release_date": ""}, {"index": "19", "title": "One, Two, Buckle My Shoe", "year": "1940", "status": "published", "release_date": ""}, {"index": "20", "title": "Evil Under the Sun", "year": "1941", "status": "published", "release_date": ""}, {"index": "21", "title": "Five Little Pigs", "year": "1942", "status": "published", "release_date": ""}, {"index": "22", "title": "The Hollow", "year": "1946", "status": "published", "release_date": ""}, {"index": "23", "title": "Taken at the Flood", "year": "1948", "status": "published", "release_date": ""}, {"index": "24", "title": "Mrs McGinty's Dead", "year": "1952", "status": "published", "release_date": ""}, {"index": "25", "title": "After the Funeral", "year": "1953", "status": "published", "release_date": ""}, {"index": "26", "title": "Hickory Dickory Dock", "year": "1955", "status": "published", "release_date": ""}, {"index": "27", "title": "Dead Man's Folly", "year": "1956", "status": "published", "release_date": ""}, {"index": "28", "title": "Cat Among the Pigeons", "year": "1959", "status": "published", "release_date": ""}, {"index": "29", "title": "The Clocks", "year": "1963", "status": "published", "release_date": ""}, {"index": "30", "title": "Third Girl", "year": "1966", "status": "published", "release_date": ""}, {"index": "31", "title": "Hallowe'en Party", "year": "1969", "status": "published", "release_date": ""}, {"index": "32", "title": "Elephants Can Remember", "year": "1972", "status": "published", "release_date": ""}, {"index": "33", "title": "Curtain", "year": "1975", "status": "published", "release_date": ""}]}, "Foxfire": {"author": "Foxfire Fund / Eliot Wigginton (ed.)", "total_published": "12", "note": "Main series is 12 numbered volumes (1972-2004); Foxfire 12 is the latest. Later volumes edited by Foxfire Fund students after Wigginton. Numerous anniversary/companion editions exist but are not new numbered entries.", "entries": [{"index": "1", "title": "The Foxfire Book", "year": "1972", "status": "published", "release_date": ""}, {"index": "2", "title": "Foxfire 2", "year": "1973", "status": "published", "release_date": ""}, {"index": "3", "title": "Foxfire 3", "year": "1975", "status": "published", "release_date": ""}, {"index": "4", "title": "Foxfire 4", "year": "1977", "status": "published", "release_date": ""}, {"index": "5", "title": "Foxfire 5", "year": "1979", "status": "published", "release_date": ""}, {"index": "6", "title": "Foxfire 6", "year": "1980", "status": "published", "release_date": ""}, {"index": "7", "title": "Foxfire 7", "year": "1982", "status": "published", "release_date": ""}, {"index": "8", "title": "Foxfire 8", "year": "1984", "status": "published", "release_date": ""}, {"index": "9", "title": "Foxfire 9", "year": "1986", "status": "published", "release_date": ""}, {"index": "10", "title": "Foxfire 10", "year": "1993", "status": "published", "release_date": ""}, {"index": "11", "title": "Foxfire 11", "year": "1999", "status": "published", "release_date": ""}, {"index": "12", "title": "Foxfire 12", "year": "2004", "status": "published", "release_date": ""}, {"index": "", "title": "The Foxfire Book of Appalachian Cookery", "year": "1984", "status": "published", "release_date": ""}]}, "Woolsey Family": {"author": "Martha Hall Kelly", "total_published": "3", "note": "Connected Woolsey-family historical novels (read in publication order).", "entries": [{"index": "1", "title": "Lilac Girls", "year": "2016", "status": "published", "release_date": ""}, {"index": "2", "title": "Lost Roses", "year": "2019", "status": "published", "release_date": ""}, {"index": "3", "title": "Sunflower Sisters", "year": "2021", "status": "published", "release_date": ""}]}};
+const STORES = {"generated": "2026-07-05", "local": [{"name": "Millard Oakley Public Library", "city": "Livingston, TN", "kind": "Borrow (local library)", "url": "https://overtoncountytn.com/library/", "phone": "(931) 823-1888", "addr": "107 E. Main St, Livingston, TN 38570", "search": ""}, {"name": "Plenty Downtown Bookshop", "city": "Cookeville, TN (~20 min)", "kind": "Local indie — new books", "url": "https://bookshop.org/shop/plentybookshop", "phone": "(931) 349-2119", "addr": "41 W. Broad St, Cookeville, TN 38501", "search": ""}, {"name": "Books-A-Million", "city": "Cookeville, TN (~20 min)", "kind": "Chain — new books", "url": "https://www.booksamillion.com/", "phone": "(931) 528-2500", "addr": "401 W Jackson St Ste 290, Cookeville, TN 38501", "search": "https://www.booksamillion.com/search?query="}], "online": [{"name": "Amazon", "search": "https://www.amazon.com/s?k="}, {"name": "Bookshop.org", "search": "https://bookshop.org/beta-search?keywords="}, {"name": "ThriftBooks (used)", "search": "https://www.thriftbooks.com/browse/?b.search="}, {"name": "AbeBooks (used/rare)", "search": "https://www.abebooks.com/servlet/SearchResults?kn="}]};
+
+/* ---------- state ---------- */
+let books = load();
+let view = "covers", sortBy = "author", query = "";
+const norm = s => (s||"").toLowerCase().replace(/^(the|a|an) /,"").replace(/[^a-z0-9]+/g," ").trim();
+const enc = s => encodeURIComponent(s);
+
+function load(){
+  try{ const s = localStorage.getItem("lib_books"); if(s) return JSON.parse(s); }catch(e){}
+  return CATALOG.map(b=>({...b}));
+}
+function persist(){ try{ localStorage.setItem("lib_books", JSON.stringify(books)); }catch(e){} }
+
+/* ---------- cover fetching (Open Library) ---------- */
+const coverCache = JSON.parse(localStorage.getItem("lib_covers")||"{}");
+function saveCovers(){ try{ localStorage.setItem("lib_covers", JSON.stringify(coverCache)); }catch(e){} }
+const ckey = b => b.isbn ? "i:"+b.isbn : "t:"+norm(b.title)+"|"+norm(b.author);
+async function resolveCover(b){
+  const k = ckey(b);
+  if(coverCache[k]!==undefined) return coverCache[k];
+  let url = "";
+  try{
+    if(b.isbn){
+      url = "https://covers.openlibrary.org/b/isbn/"+encodeURIComponent(b.isbn)+"-M.jpg?default=false";
+    } else {
+      const t = b.title.replace(/\s*\(multiple\).*/i,"").replace(/\s*series.*/i,"").replace(/ collection/i,"");
+      const r = await fetch("https://openlibrary.org/search.json?limit=1&fields=cover_i,isbn&title="+enc(t)+"&author="+enc(b.author));
+      const j = await r.json();
+      const d = (j.docs&&j.docs[0])||{};
+      if(d.cover_i) url = "https://covers.openlibrary.org/b/id/"+d.cover_i+"-M.jpg";
+      else if(d.isbn&&d.isbn[0]) url = "https://covers.openlibrary.org/b/isbn/"+d.isbn[0]+"-M.jpg?default=false";
+    }
+  }catch(e){ url=""; }
+  coverCache[k]=url; saveCovers(); return url;
+}
+function setCover(el,url){ return new Promise(res=>{ const img=new Image();
+  img.onload=()=>{ el.querySelector("img")?.remove(); const ph=el.querySelector(".ph,.mph"); if(ph) ph.style.display="none"; el.insertBefore(img, el.firstChild); res(true); };
+  img.onerror=()=>res(false); img.src=url; img.alt=""; }); }
+
+let pendingCovers=[], coverBusy=0;
+function inView(el){ const r=el.getBoundingClientRect(); return r.bottom > -500 && r.top < (window.innerHeight||812)+500; }
+async function pumpCovers(){
+  if(coverBusy>=6) return;
+  const idx = pendingCovers.findIndex(inView);
+  if(idx<0) return;
+  const el = pendingCovers.splice(idx,1)[0];
+  coverBusy++;
+  try{ const b=books.find(x=>x.id==el.dataset.id); if(b){ const url=await resolveCover(b); if(url) await setCover(el,url); } }catch(e){}
+  coverBusy--; pumpCovers();
+}
+function wireCovers(root){
+  pendingCovers = [...root.querySelectorAll("[data-id]")].filter(el=>el.querySelector(".ph,.mph"));
+  for(let i=0;i<6;i++) pumpCovers();
+}
+let _scrollT;
+addEventListener("scroll", ()=>{ clearTimeout(_scrollT); _scrollT=setTimeout(()=>{ for(let i=0;i<6;i++) pumpCovers(); },120); }, {passive:true});
+addEventListener("resize", ()=>{ for(let i=0;i<6;i++) pumpCovers(); });
+
+/* ---------- helpers ---------- */
+const esc = s => (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function filtered(){
+  const q = norm(query);
+  let a = books.filter(b=> !q || norm(b.title).includes(q)||norm(b.author).includes(q)||norm(b.series).includes(q)||norm(b.genre).includes(q));
+  const lastName = s => { const p=(s||"").trim().split(" "); return p[p.length-1]||""; };
+  a.sort((x,y)=>{
+    if(sortBy==="title") return norm(x.title).localeCompare(norm(y.title));
+    if(sortBy==="year_new") return (parseInt(y.year)||-9999)-(parseInt(x.year)||-9999);
+    if(sortBy==="year_old") return (parseInt(x.year)||9999)-(parseInt(y.year)||9999);
+    return norm(lastName(x.author)+" "+x.title).localeCompare(norm(lastName(y.author)+" "+y.title));
+  });
+  return a;
+}
+
+/* ---------- views ---------- */
+function render(){
+  document.getElementById("count").textContent = books.length+" books";
+  document.getElementById("sortbar").style.display = (view==="series")?"none":"flex";
+  const m = document.getElementById("main");
+  const data = filtered();
+  if(!data.length){ m.innerHTML = `<div class="empty">No books match “${esc(query)}”.</div>`; return; }
+  if(view==="covers") renderCovers(m,data);
+  else if(view==="series") renderSeries(m);
+  else renderGroups(m,data, view==="authors"?"author":"genre");
+  wireCovers(m);
+}
+
+function renderCovers(m,data){
+  document.getElementById("viewnote").textContent = data.length+" shown";
+  m.innerHTML = `<div class="grid">`+data.map(b=>`
+    <button class="bcard" onclick="openBook(${b.id})">
+      <div class="cover">${b.placeholder?'<span class="badge multi">series</span>':(b.series?'<span class="badge">series</span>':'')}
+        <div class="ph" ${''}></div>
+      </div>
+      <div class="binfo"><div class="bt">${esc(b.title)}</div><div class="ba">${esc(b.author)}</div></div>
+    </button>`).join("")+`</div>`;
+  // inject cover placeholders with data-id
+  m.querySelectorAll(".bcard").forEach((c,i)=>{ const b=data[i];
+    const cv=c.querySelector(".cover"); const ph=cv.querySelector(".ph");
+    cv.dataset.id=b.id;
+    ph.innerHTML=`<div class="t">${esc(b.title)}</div><div class="a">${esc(b.author)}</div>`;
+  });
+}
+
+function renderGroups(m,data,key){
+  const groups={};
+  data.forEach(b=>{ const g=(key==="author"?b.author:b.genre)||"—"; (groups[g]=groups[g]||[]).push(b); });
+  const names=Object.keys(groups).sort((a,b)=>{
+    if(key==="author"){ const ln=s=>{const p=s.trim().split(" ");return p[p.length-1];}; return norm(ln(a)).localeCompare(norm(ln(b))); }
+    return a.localeCompare(b);
+  });
+  document.getElementById("viewnote").textContent = names.length+" "+(key==="author"?"authors":"genres");
+  m.innerHTML = names.map(n=>`
+    <div class="group">
+      <div class="ghead" onclick="this.parentNode.classList.toggle('open')">
+        <span class="chev">▸</span><span>${esc(n)}</span><span class="gc">${groups[n].length}</span>
+      </div>
+      <div class="glist">${groups[n].sort((x,y)=>norm(x.title).localeCompare(norm(y.title))).map(b=>`
+        <div class="row" onclick="openBook(${b.id})">
+          <div class="mini" data-id="${b.id}"><div class="mph">${esc(b.title)}</div></div>
+          <div><div class="rt">${esc(b.title)}</div><div class="rs">${key==="author"?esc(b.genre):esc(b.author)}${b.year?" · "+b.year:""}${b.series?" · "+esc(b.series):""}</div></div>
+        </div>`).join("")}</div>
+    </div>`).join("");
+}
+
+function seriesMatch(seriesName){
+  // returns {db, owned:[{book}], entries:[{...,have,book}], haveCount, total, upcoming:[]}
+  const db = SERIES_DB[seriesName];
+  const owned = books.filter(b=>b.series===seriesName);
+  if(!db) return {db:null, owned, entries:[], haveCount:owned.length, total:owned.length, upcoming:[]};
+  const ownedNorm = owned.map(b=>norm(b.title));
+  const placeholder = owned.some(b=>b.placeholder);
+  const entries = db.entries.map(e=>{
+    const have = !placeholder && ownedNorm.some(t=> t===norm(e.title) || (t.length>4&&norm(e.title).includes(t)) );
+    return {...e, have};
+  });
+  const published = entries.filter(e=>e.status!=="upcoming");
+  const upcoming = entries.filter(e=>e.status==="upcoming");
+  const haveCount = placeholder ? owned.length : published.filter(e=>e.have).length;
+  const total = published.length;
+  return {db, owned, entries, published, upcoming, haveCount, total, placeholder};
+}
+
+function renderSeries(m){
+  const q=norm(query);
+  let names=[...new Set(books.filter(b=>b.series).map(b=>b.series))];
+  names=names.filter(n=>!q||norm(n).includes(q)||books.some(b=>b.series===n&&(norm(b.title).includes(q)||norm(b.author).includes(q))));
+  names.sort();
+  if(!names.length){ m.innerHTML=`<div class="empty">No series found.</div>`; return; }
+  m.innerHTML = names.map(n=>{
+    const s=seriesMatch(n);
+    const auth=s.db?s.db.author:(s.owned[0]?s.owned[0].author:"");
+    const pct= s.total? Math.round(100*s.haveCount/s.total):100;
+    const renderEnt = (e)=>{
+      const up = e.status==="upcoming";
+      const cls = up?"up":(s.placeholder?"ref":(e.have?"have":"miss"));
+      const tag = up?`<span class="tag u">${esc(e.release_date||"upcoming")}</span>`
+                    :(s.placeholder?"":(e.have?`<span class="check">✓</span>`:`<span class="tag m">missing</span>`));
+      return `<div class="ent ${cls}"><div class="num">${esc(e.index||"•")}</div>
+        <div><div class="et">${esc(e.title)}</div>${e.year||e.release_date?`<div class="ey">${esc(up?("Releases "+(e.release_date||"TBA")):e.year)}</div>`:""}</div>${tag}</div>`;
+    };
+    let entriesHTML;
+    if(s.db){
+      let ents=s.entries, extra=0;
+      if(s.placeholder && ents.length>8){ extra=ents.length-8; ents=ents.slice(0,8); }
+      entriesHTML=ents.map(renderEnt).join("");
+      if(extra) entriesHTML+=`<div class="ent ref"><div class="num">…</div><div><div class="et" style="color:var(--muted);font-weight:500">+${extra} more in the series</div></div></div>`;
+    } else {
+      entriesHTML=s.owned.map(b=>`<div class="ent have"><div class="num">•</div><div><div class="et">${esc(b.title)}</div></div><span class="check">✓</span></div>`).join("");
+    }
+    const upCount = s.upcoming? s.upcoming.length:0;
+    const progHTML = s.placeholder
+      ? `<div class="prog"><div class="pl" style="background:#efe7d6;color:var(--muted);padding:3px 10px;border-radius:20px">several volumes owned</div></div>`
+      : `<div class="prog"><div class="bar"><i style="width:${pct}%"></i></div><div class="pl">${s.haveCount} of ${s.total}</div></div>`;
+    return `<div class="scard">
+      <h3>${esc(n)}</h3><div class="sauth">${esc(auth)}${s.total&&!s.placeholder?" · "+s.total+" books":""}${upCount?` · <span style="color:var(--up)">${upCount} upcoming</span>`:""}</div>
+      ${progHTML}
+      ${s.placeholder?`<div class="snote">You own several — import your Libib list to mark exactly which ones. Full reading order below.</div>`:(s.db&&s.db.note?`<div class="snote">${esc(s.db.note)}</div>`:"")}
+      <div class="entries">${entriesHTML}</div>
+    </div>`;
+  }).join("");
+}
+
+/* ---------- detail sheet ---------- */
+function buyLinks(b){
+  const q = b.isbn ? b.isbn : (b.title.replace(/\s*\(multiple\).*/i,"")+" "+b.author);
+  const online = STORES.online.map(s=>`<a class="buy" href="${s.search}${enc(q)}" target="_blank" rel="noopener"><span class="bn">${esc(s.name)}</span><span class="bk">search &rsaquo;</span></a>`).join("");
+  const local = STORES.local.map(s=>{
+    const href = s.search? s.search+enc(q) : s.url;
+    return `<a class="buy local" href="${href}" target="_blank" rel="noopener"><span class="bn">${esc(s.name)}</span><span class="bk">${esc(s.kind)} · ${esc(s.city)}</span></a>`;
+  }).join("");
+  return {online, local};
+}
+function openBook(id){
+  const b=books.find(x=>x.id==id); if(!b) return;
+  const bl=buyLinks(b);
+  let seriesBlock="";
+  if(b.series){
+    const s=seriesMatch(b.series);
+    if(s.db && !s.placeholder){
+      seriesBlock=`<div class="sect"><h4>Series</h4><div class="miniprog">
+        <b>${esc(b.series)}</b> — ${s.haveCount} of ${s.total} owned
+        <div class="bar" style="margin-top:8px"><i style="width:${Math.round(100*s.haveCount/Math.max(1,s.total))}%"></i></div>
+        ${s.upcoming&&s.upcoming.length?`<div style="margin-top:8px;font-size:12px;color:var(--up)"><b>Coming:</b> ${s.upcoming.map(e=>esc(e.title)+(e.release_date?" ("+esc(e.release_date)+")":"")).join(", ")}</div>`:""}
+      </div></div>`;
+    } else {
+      seriesBlock=`<div class="sect"><h4>Series</h4><div class="miniprog"><b>${esc(b.series)}</b><div style="font-size:12px;color:var(--muted);margin-top:4px">Several volumes owned.</div></div></div>`;
+    }
+  }
+  document.getElementById("sheetbody").innerHTML=`
+    <div class="dtop">
+      <div class="dcover" data-id="${b.id}" id="dcover"><div class="ph mph" style="font-size:11px;padding:8px;text-align:center">${esc(b.title)}</div></div>
+      <div class="dmeta">
+        <h2>${esc(b.title)}</h2>
+        <div class="dau">${esc(b.author)}</div>
+        <div>${b.genre?`<span class="pill">${esc(b.genre)}</span>`:""}${b.year?`<span class="pill">${esc(b.year)}</span>`:""}${b.shelf?`<span class="pill">${esc(b.shelf)}</span>`:""}</div>
+      </div>
+    </div>
+    ${b.notes?`<div class="dnotes">${esc(b.notes)}</div>`:""}
+    ${seriesBlock}
+    <div class="sect"><h4>Local to Livingston, TN</h4><div class="btns">${bl.local}</div></div>
+    <div class="sect"><h4>Buy online</h4><div class="btns">${bl.online}</div></div>`;
+  // detail cover
+  const dc=document.getElementById("dcover");
+  resolveCover(b).then(url=>{ if(url){ const img=new Image(); img.onload=()=>{dc.querySelector(".mph").style.display="none";dc.insertBefore(img,dc.firstChild);}; img.src=url; } });
+  openSheet();
+}
+function openSheet(){ document.getElementById("scrim").classList.add("on"); document.getElementById("sheet").classList.add("on"); }
+function closeSheet(){ document.getElementById("scrim").classList.remove("on"); document.getElementById("sheet").classList.remove("on"); }
+
+/* ---------- settings / import ---------- */
+function openSettings(){
+  document.getElementById("sheetbody").innerHTML=`<div class="panel">
+    <h3>Library settings</h3>
+    <p style="font-size:13px;color:var(--muted);margin:4px 0 0">${books.length} books · ${Object.keys(SERIES_DB).length} series tracked</p>
+    <label class="imp" for="csv">Import from Libib (CSV)</label>
+    <input id="csv" type="file" accept=".csv,text/csv" style="display:none">
+    <button class="imp sec" onclick="resetLib()">Reset to sample library</button>
+    <div class="hint"><b>How to export from Libib</b> (on Dani's phone):
+      <ol><li>Open the Libib app → <b>Menu</b> (☰)</li>
+      <li>Tap your library → <b>Settings / Manage</b></li>
+      <li>Choose <b>Export</b> → <b>CSV</b> (email it to yourself or save to Files)</li>
+      <li>Come back here → <b>Import from Libib</b> → pick that .csv</li></ol>
+      Covers, genres and series update automatically from the ISBNs in the file.</div>
+  </div>`;
+  document.getElementById("csv").addEventListener("change", handleCSV);
+  openSheet();
+}
+function resetLib(){ localStorage.removeItem("lib_books"); books=CATALOG.map(b=>({...b})); persist(); closeSheet(); render(); toast("Reset to sample library"); }
+
+function parseCSV(text){
+  const rows=[]; let row=[], cur="", q=false;
+  text=text.replace(/\r\n/g,"\n").replace(/\r/g,"\n");
+  for(let i=0;i<text.length;i++){ const c=text[i];
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=c; }
+    else { if(c==='"') q=true; else if(c===","){row.push(cur);cur="";} else if(c==="\n"){row.push(cur);rows.push(row);row=[];cur="";} else cur+=c; }
+  }
+  if(cur.length||row.length){ row.push(cur); rows.push(row); }
+  return rows.filter(r=>r.length>1||(r[0]||"").trim());
+}
+function handleCSV(e){
+  const f=e.target.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{
+      const rows=parseCSV(rd.result); if(rows.length<2){ toast("Empty CSV"); return; }
+      const head=rows[0].map(h=>h.trim().toLowerCase());
+      const find=(...names)=>{ for(const n of names){ const i=head.findIndex(h=>h===n); if(i>=0)return i; } for(const n of names){ const i=head.findIndex(h=>h.includes(n)); if(i>=0)return i; } return -1; };
+      const iT=find("title"), iA=find("creators","authors","author","creator"),
+        iFn=find("first_name","first name"), iLn=find("last_name","last name"),
+        iIsbn=find("ean_isbn13","isbn13","isbn_13","isbn"), iIsbn10=find("upc_isbn10","isbn10"),
+        iGen=find("genres","genre"), iYr=find("publish_date","published","publish date","year"),
+        iSer=find("series"), iGrp=find("group","collection","shelf","tags");
+      const out=[];
+      for(let r=1;r<rows.length;r++){ const c=rows[r]; if(!c||!(c[iT]||"").trim()) continue;
+        let author = iA>=0?c[iA]:"";
+        if(!author && iLn>=0) author = ((iFn>=0?c[iFn]:"")+" "+c[iLn]).trim();
+        let isbn = (iIsbn>=0?c[iIsbn]:"")||"" ; isbn=isbn.replace(/[^0-9Xx]/g,"");
+        if(!isbn && iIsbn10>=0) isbn=(c[iIsbn10]||"").replace(/[^0-9Xx]/g,"");
+        let year=(iYr>=0?c[iYr]:"")||""; const ym=year.match(/(1[5-9]\d\d|20\d\d)/); year=ym?ym[1]:"";
+        let genre=(iGen>=0?c[iGen]:"")||""; genre=genre.split(/[;,|]/)[0].trim()||"Uncategorized";
+        let series=(iSer>=0?c[iSer]:"")||"";
+        if(!series && iGrp>=0){ const g=c[iGrp]||""; const mm=g.match(/([\w' .]+?)\s*#?\d/); if(/series|#\d/i.test(g)&&mm) series=mm[1].trim(); }
+        // match against known series DB by title
+        if(!series){ for(const sn in SERIES_DB){ if(SERIES_DB[sn].entries.some(en=>norm(en.title)===norm(c[iT]))){ series=sn; break; } } }
+        out.push({ id:out.length+1, title:(c[iT]||"").trim(), author:author.trim()||"Unknown",
+          genre, year, shelf:(iGrp>=0?(c[iGrp]||"").trim():"")||"Libib import", series, placeholder:false,
+          isbn, confidence:"import", notes:"" });
+      }
+      if(!out.length){ toast("No rows found — is this a Libib CSV?"); return; }
+      books=out; persist(); closeSheet(); view="covers"; setTab("covers"); render();
+      toast("Imported "+out.length+" books from Libib");
+    }catch(err){ toast("Could not read that CSV"); }
+  };
+  rd.readAsText(f);
+}
+
+/* ---------- ui wiring ---------- */
+function setTab(v){ view=v; document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===v)); render(); }
+document.getElementById("tabs").addEventListener("click",e=>{ const b=e.target.closest("button"); if(b) setTab(b.dataset.v); });
+document.getElementById("sort").addEventListener("change",e=>{ sortBy=e.target.value; render(); });
+document.getElementById("q").addEventListener("input",e=>{ query=e.target.value; render(); });
+document.getElementById("gear").addEventListener("click",openSettings);
+document.getElementById("scrim").addEventListener("click",closeSheet);
+let toastT; function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.classList.add("on"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("on"),2600); }
+
+render();
+</script>
+</body>
+</html>

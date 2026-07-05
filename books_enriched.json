@@ -1,0 +1,1154 @@
+{
+ "books": [
+  {
+   "orig_title": "Nourished Beginnings Baby Food",
+   "title": "Nourished Beginnings Baby Food",
+   "author": "Renee Kohley",
+   "genre": "Cookbook",
+   "first_published": "2016",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": "Nutrient-dense homemade baby food cookbook; author guess correct. Shelved on fiction bookcase but is nonfiction."
+  },
+  {
+   "orig_title": "The Lioness",
+   "title": "The Lioness",
+   "author": "Chris Bohjalian",
+   "genre": "Historical Fiction",
+   "first_published": "2022",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": "1964 Serengeti safari thriller."
+  },
+  {
+   "orig_title": "The Musician's Daughter",
+   "title": "The Musician's Daughter",
+   "author": "Susanne Dunlap",
+   "genre": "Historical Fiction",
+   "first_published": "2009",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": "YA historical mystery set in 18th-century Vienna."
+  },
+  {
+   "orig_title": "The Persian Pickle Club",
+   "title": "The Persian Pickle Club",
+   "author": "Sandra Dallas",
+   "genre": "Historical Fiction",
+   "first_published": "1995",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": "Depression-era Kansas quilting-circle novel."
+  },
+  {
+   "orig_title": "Diaries of a Haunting",
+   "title": "Diary of a Haunting",
+   "author": "M. Verano",
+   "genre": "Young Adult Horror",
+   "first_published": "2015",
+   "shelf": "Fiction bookcase",
+   "confidence": "medium",
+   "notes": "Likely 'Diary of a Haunting' by M. Verano (found-document YA horror series); spine read as plural. Author is a pseudonym."
+  },
+  {
+   "orig_title": "The Bookseller's Secret",
+   "title": "The Bookseller's Secret",
+   "author": "Michelle Gable",
+   "genre": "Historical Fiction",
+   "first_published": "2021",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": "Novel about Nancy Mitford in WWII London."
+  },
+  {
+   "orig_title": "A Botanist's Guide to Parties and Poisons",
+   "title": "A Botanist's Guide to Parties and Poisons",
+   "author": "Kate Khavari",
+   "genre": "Historical Mystery",
+   "first_published": "2022",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": "Saffron Everleigh Mystery #1."
+  },
+  {
+   "orig_title": "A Botanist's Guide to Flowers and Fatality",
+   "title": "A Botanist's Guide to Flowers and Fatality",
+   "author": "Kate Khavari",
+   "genre": "Historical Mystery",
+   "first_published": "2023",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": "Saffron Everleigh Mystery #2."
+  },
+  {
+   "orig_title": "It Ends with Us",
+   "title": "It Ends with Us",
+   "author": "Colleen Hoover",
+   "genre": "Romance",
+   "first_published": "2016",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "Fahrenheit 451",
+   "title": "Fahrenheit 451",
+   "author": "Ray Bradbury",
+   "genre": "Science Fiction",
+   "first_published": "1953",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "Jane Eyre",
+   "title": "Jane Eyre",
+   "author": "Charlotte Bronte",
+   "genre": "Classic Literature",
+   "first_published": "1847",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "A Little Princess",
+   "title": "A Little Princess",
+   "author": "Frances Hodgson Burnett",
+   "genre": "Children's",
+   "first_published": "1905",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": "Expanded from the 1888 novella 'Sara Crewe'."
+  },
+  {
+   "orig_title": "The Lost Girls",
+   "title": "The Lost Girls",
+   "author": "Heather Young",
+   "genre": "Mystery",
+   "first_published": "2016",
+   "shelf": "Fiction bookcase",
+   "confidence": "medium",
+   "notes": "Debut literary mystery by Heather Young; title is shared by several unrelated books, but the author guess pins this one."
+  },
+  {
+   "orig_title": "Hard Rain",
+   "title": "Hard Rain",
+   "author": "Samantha Jayne Allen",
+   "genre": "Mystery",
+   "first_published": "2023",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": "Annie McIntyre Mystery #2."
+  },
+  {
+   "orig_title": "The Silkworm",
+   "title": "The Silkworm",
+   "author": "Robert Galbraith",
+   "genre": "Crime Fiction",
+   "first_published": "2014",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": "Cormoran Strike #2; Robert Galbraith is the pen name of J.K. Rowling"
+  },
+  {
+   "orig_title": "A Painted House",
+   "title": "A Painted House",
+   "author": "John Grisham",
+   "genre": "Literary Fiction",
+   "first_published": "2001",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": "Coming-of-age novel, a departure from Grisham's legal thrillers"
+  },
+  {
+   "orig_title": "Winter Garden",
+   "title": "Winter Garden",
+   "author": "Kristin Hannah",
+   "genre": "Historical Fiction",
+   "first_published": "2010",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "Shiver",
+   "title": "Shiver",
+   "author": "Lisa Jackson",
+   "genre": "Thriller",
+   "first_published": "2006",
+   "shelf": "Fiction bookcase",
+   "confidence": "medium",
+   "notes": "Title is ambiguous (also a Maggie Stiefvater YA novel); Lisa Jackson's is a New Orleans thriller, kept per author_guess"
+  },
+  {
+   "orig_title": "The Seven Husbands of Evelyn Hugo",
+   "title": "The Seven Husbands of Evelyn Hugo",
+   "author": "Taylor Jenkins Reid",
+   "genre": "Historical Fiction",
+   "first_published": "2017",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "The Gravedigger's Daughter",
+   "title": "The Gravedigger's Daughter",
+   "author": "Joyce Carol Oates",
+   "genre": "Literary Fiction",
+   "first_published": "2007",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "The Summons",
+   "title": "The Summons",
+   "author": "John Grisham",
+   "genre": "Legal Thriller",
+   "first_published": "2002",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "The Broker",
+   "title": "The Broker",
+   "author": "John Grisham",
+   "genre": "Legal Thriller",
+   "first_published": "2005",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": "More of a political/espionage thriller than strictly legal"
+  },
+  {
+   "orig_title": "Roots",
+   "title": "Roots: The Saga of an American Family",
+   "author": "Alex Haley",
+   "genre": "Historical Fiction",
+   "first_published": "1976",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "The Four Winds",
+   "title": "The Four Winds",
+   "author": "Kristin Hannah",
+   "genre": "Historical Fiction",
+   "first_published": "2021",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "The Forest of Vanishing Stars",
+   "title": "The Forest of Vanishing Stars",
+   "author": "Kristin Harmel",
+   "genre": "Historical Fiction",
+   "first_published": "2021",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "The House of the Seven Gables",
+   "title": "The House of the Seven Gables",
+   "author": "Nathaniel Hawthorne",
+   "genre": "Classic Literature",
+   "first_published": "1851",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "All Creatures Great and Small",
+   "title": "All Creatures Great and Small",
+   "author": "James Herriot",
+   "genre": "Memoir",
+   "first_published": "1972",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": "Semi-autobiographical veterinary memoir; 1972 is the US omnibus edition"
+  },
+  {
+   "orig_title": "Bite Me! Low-Calorie High-Protein Cooking",
+   "title": "Bite Me! Low-Calorie High-Protein Cooking",
+   "author": "Will Tennyson",
+   "genre": "Cookbook",
+   "first_published": "",
+   "shelf": "Fiction bookcase",
+   "confidence": "low",
+   "notes": "Could not confidently verify a published cookbook by this exact title/author; Will Tennyson is a fitness YouTuber, publication unconfirmed"
+  },
+  {
+   "orig_title": "The Last Templar",
+   "title": "The Last Templar",
+   "author": "Raymond Khoury",
+   "genre": "Thriller",
+   "first_published": "2005",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "Babel",
+   "title": "Babel: Or the Necessity of Violence",
+   "author": "R.F. Kuang",
+   "genre": "Historical Fantasy",
+   "first_published": "2022",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": "Full title: Babel, or the Necessity of Violence: An Arcane History of the Oxford Translators' Revolution"
+  },
+  {
+   "orig_title": "Daughters of Shandong",
+   "title": "Daughters of Shandong",
+   "author": "Eve J. Chung",
+   "genre": "Historical Fiction",
+   "first_published": "2024",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "Gentlemen and Players",
+   "title": "Gentlemen and Players",
+   "author": "Joanne Harris",
+   "genre": "Psychological Thriller",
+   "first_published": "2005",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "Lost Roses",
+   "title": "Lost Roses",
+   "author": "Martha Hall Kelly",
+   "genre": "Historical Fiction",
+   "first_published": "2019",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": "Prequel to Lilac Girls"
+  },
+  {
+   "orig_title": "The Trouble with Goats and Sheep",
+   "title": "The Trouble with Goats and Sheep",
+   "author": "Joanna Cannon",
+   "genre": "Literary Fiction",
+   "first_published": "2016",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "Belgravia",
+   "title": "Belgravia",
+   "author": "Julian Fellowes",
+   "genre": "Historical Fiction",
+   "first_published": "2016",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": "Full title: Julian Fellowes's Belgravia"
+  },
+  {
+   "orig_title": "The Woman in the Library",
+   "title": "The Woman in the Library",
+   "author": "Sulari Gentill",
+   "genre": "Mystery",
+   "first_published": "2022",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "The Book Charmer",
+   "title": "The Book Charmer",
+   "author": "Karen Hawkins",
+   "genre": "Contemporary Fiction",
+   "first_published": "2019",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": "First in the Dove Pond series"
+  },
+  {
+   "orig_title": "Vax Facts",
+   "title": "Vax Facts",
+   "author": "Paul Thomas",
+   "genre": "Health Nonfiction",
+   "first_published": "2022",
+   "shelf": "Fiction bookcase",
+   "confidence": "medium",
+   "notes": "Nonfiction shelved on the fiction bookcase; full title: Vax Facts: A Parent's Guide to Making Vaccine Choices (Paul Thomas MD). Confidence medium on exact edition/year."
+  },
+  {
+   "orig_title": "The Kitchen Front",
+   "title": "The Kitchen Front",
+   "author": "Jennifer Ryan",
+   "genre": "Historical Fiction",
+   "first_published": "2021",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "The House in the Pines",
+   "title": "The House in the Pines",
+   "author": "Ana Reyes",
+   "genre": "Thriller",
+   "first_published": "2023",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "The Rose Code",
+   "title": "The Rose Code",
+   "author": "Kate Quinn",
+   "genre": "Historical Fiction",
+   "first_published": "2021",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "The English Wife",
+   "title": "The English Wife",
+   "author": "Lauren Willig",
+   "genre": "Historical Fiction",
+   "first_published": "2018",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "Atlas Shrugged",
+   "title": "Atlas Shrugged",
+   "author": "Ayn Rand",
+   "genre": "Philosophical Fiction",
+   "first_published": "1957",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "The Fountainhead",
+   "title": "The Fountainhead",
+   "author": "Ayn Rand",
+   "genre": "Philosophical Fiction",
+   "first_published": "1943",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "Mitch Rapp series (multiple)",
+   "title": "Mitch Rapp series (multiple)",
+   "author": "Vince Flynn",
+   "genre": "Political Thriller",
+   "first_published": "1999",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": "Series began with Transfer of Power (1999); later entries by Kyle Mills; several volumes on shelf"
+  },
+  {
+   "orig_title": "Women's Murder Club series (multiple)",
+   "title": "Women's Murder Club series (multiple)",
+   "author": "James Patterson",
+   "genre": "Mystery Thriller",
+   "first_published": "2001",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": "Series began with 1st to Die (2001); several volumes on shelf"
+  },
+  {
+   "orig_title": "Jodi Picoult novels (multiple)",
+   "title": "Jodi Picoult novels (multiple)",
+   "author": "Jodi Picoult",
+   "genre": "Contemporary Fiction",
+   "first_published": "1992",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": "Debut Songs of the Humpback Whale (1992); several volumes on shelf"
+  },
+  {
+   "orig_title": "Code of Conduct",
+   "title": "Code of Conduct",
+   "author": "Brad Thor",
+   "genre": "Political Thriller",
+   "first_published": "2015",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": "Scot Harvath series"
+  },
+  {
+   "orig_title": "Foreign Agent",
+   "title": "Foreign Agent",
+   "author": "Brad Thor",
+   "genre": "Political Thriller",
+   "first_published": "2016",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": "Scot Harvath series"
+  },
+  {
+   "orig_title": "Rising Tiger",
+   "title": "Rising Tiger",
+   "author": "Brad Thor",
+   "genre": "Political Thriller",
+   "first_published": "2022",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": "Scot Harvath series"
+  },
+  {
+   "orig_title": "Op-Center / EndWar (multiple)",
+   "title": "Op-Center / EndWar (multiple)",
+   "author": "Tom Clancy",
+   "genre": "Military Thriller",
+   "first_published": "1995",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": "Tom Clancy branded/co-authored series; Op-Center began 1995, EndWar tie-in novels 2008+; several volumes on shelf"
+  },
+  {
+   "orig_title": "Stephen King novels (multiple)",
+   "title": "Stephen King novels (multiple)",
+   "author": "Stephen King",
+   "genre": "Horror",
+   "first_published": "1974",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": "Debut novel Carrie (1974); several volumes on shelf"
+  },
+  {
+   "orig_title": "Ameritopia",
+   "title": "Ameritopia: The Unmaking of America",
+   "author": "Mark R. Levin",
+   "genre": "Political Commentary",
+   "first_published": "2012",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": "Nonfiction shelved in fiction bookcase"
+  },
+  {
+   "orig_title": "The Art of War",
+   "title": "The Art of War",
+   "author": "Sun Tzu",
+   "genre": "Military Strategy",
+   "first_published": "-500",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": "Ancient Chinese text, ~5th century BC; year approximate"
+  },
+  {
+   "orig_title": "Jane Austen collection",
+   "title": "Jane Austen collection",
+   "author": "Jane Austen",
+   "genre": "Classic Literature",
+   "first_published": "1811",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": "Collected works; first novel Sense and Sensibility published 1811"
+  },
+  {
+   "orig_title": "Agatha Christie mysteries (multiple)",
+   "title": "Agatha Christie mysteries (multiple)",
+   "author": "Agatha Christie",
+   "genre": "Mystery",
+   "first_published": "1920",
+   "shelf": "Fiction bookcase",
+   "confidence": "high",
+   "notes": "Debut The Mysterious Affair at Styles (1920); several volumes on shelf"
+  },
+  {
+   "orig_title": "Good to Great",
+   "title": "Good to Great: Why Some Companies Make the Leap... and Others Don't",
+   "author": "Jim Collins",
+   "genre": "Business",
+   "first_published": "2001",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "Grit",
+   "title": "Grit: The Power of Passion and Perseverance",
+   "author": "Angela Duckworth",
+   "genre": "Psychology",
+   "first_published": "2016",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "Outliers",
+   "title": "Outliers: The Story of Success",
+   "author": "Malcolm Gladwell",
+   "genre": "Psychology",
+   "first_published": "2008",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "Go Put Your Strengths to Work",
+   "title": "Go Put Your Strengths to Work: 6 Powerful Steps to Achieve Outstanding Performance",
+   "author": "Marcus Buckingham",
+   "genre": "Business",
+   "first_published": "2007",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "12 Rules for Life",
+   "title": "12 Rules for Life: An Antidote to Chaos",
+   "author": "Jordan B. Peterson",
+   "genre": "Self-Help",
+   "first_published": "2018",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "Come As You Are",
+   "title": "Come As You Are: The Surprising New Science That Will Transform Your Sex Life",
+   "author": "Emily Nagoski",
+   "genre": "Psychology",
+   "first_published": "2015",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "Blind Spots",
+   "title": "Blind Spots: When Medicine Gets It Wrong, and What It Means for Our Health",
+   "author": "Marty Makary",
+   "genre": "Health",
+   "first_published": "2024",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": "Marty Makary title; distinct from other books sharing this common name"
+  },
+  {
+   "orig_title": "Domesticated",
+   "title": "Domesticated: Evolution in a Man-Made World",
+   "author": "Richard C. Francis",
+   "genre": "Science",
+   "first_published": "2015",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "Good Energy",
+   "title": "Good Energy: The Surprising Connection Between Metabolism and Limitless Health",
+   "author": "Casey Means",
+   "genre": "Health",
+   "first_published": "2024",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": "Co-authored with Calley Means"
+  },
+  {
+   "orig_title": "The Black Arts",
+   "title": "The Black Arts: A Concise History of Witchcraft, Demonology, Astrology, and Other Mystical Practices Throughout the Ages",
+   "author": "Richard Cavendish",
+   "genre": "Occult",
+   "first_published": "1967",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "Midnight in the Garden of Good and Evil",
+   "title": "Midnight in the Garden of Good and Evil",
+   "author": "John Berendt",
+   "genre": "True Crime",
+   "first_published": "1994",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "Sold",
+   "title": "Sold",
+   "author": "Patricia McCormick",
+   "genre": "Young Adult Fiction",
+   "first_published": "2006",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": "Novel in verse; shelved in nonfiction bookcase but the work is fiction"
+  },
+  {
+   "orig_title": "Killing Jesus",
+   "title": "Killing Jesus: A History",
+   "author": "Bill O'Reilly and Martin Dugard",
+   "genre": "History",
+   "first_published": "2013",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "The JFK Conspiracy",
+   "title": "The JFK Conspiracy: The Secret Plot to Kill Kennedy--and Why It Failed",
+   "author": "Brad Meltzer and Josh Mensch",
+   "genre": "History",
+   "first_published": "2025",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": "Co-authored with Josh Mensch; about the 1960 Chicago plot against JFK"
+  },
+  {
+   "orig_title": "Red Notice",
+   "title": "Red Notice: A True Story of High Finance, Murder, and One Man's Fight for Justice",
+   "author": "Bill Browder",
+   "genre": "Nonfiction",
+   "first_published": "2015",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "Unmasked",
+   "title": "Unmasked: Inside Antifa's Radical Plan to Destroy Democracy",
+   "author": "Andy Ngo",
+   "genre": "Political Commentary",
+   "first_published": "2021",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "Red-Handed",
+   "title": "Red-Handed: How American Elites Get Rich Helping China Win",
+   "author": "Peter Schweizer",
+   "genre": "Political Commentary",
+   "first_published": "2022",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "A Patriot's History of the United States",
+   "title": "A Patriot's History of the United States: From Columbus's Great Discovery to the War on Terror",
+   "author": "Larry Schweikart and Michael Allen",
+   "genre": "History",
+   "first_published": "2004",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": "co-authored with Michael Allen"
+  },
+  {
+   "orig_title": "The Diary of a Young Girl",
+   "title": "The Diary of a Young Girl",
+   "author": "Anne Frank",
+   "genre": "Memoir",
+   "first_published": "1947",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": "first published in Dutch as Het Achterhuis"
+  },
+  {
+   "orig_title": "The Case for Christ",
+   "title": "The Case for Christ",
+   "author": "Lee Strobel",
+   "genre": "Christian Nonfiction",
+   "first_published": "1998",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "Mere Christianity",
+   "title": "Mere Christianity",
+   "author": "C.S. Lewis",
+   "genre": "Christian Nonfiction",
+   "first_published": "1952",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "The Complete C.S. Lewis Signature Classics",
+   "title": "The Complete C.S. Lewis Signature Classics",
+   "author": "C.S. Lewis",
+   "genre": "Christian Nonfiction",
+   "first_published": "2002",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": "omnibus of seven works; collection first published 2002"
+  },
+  {
+   "orig_title": "Arguing with Socialists",
+   "title": "Arguing with Socialists",
+   "author": "Glenn Beck",
+   "genre": "Political Commentary",
+   "first_published": "2020",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "Liars",
+   "title": "Liars: How Progressives Exploit Our Fears for Power and Control",
+   "author": "Glenn Beck",
+   "genre": "Political Commentary",
+   "first_published": "2016",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "Addicted to Outrage",
+   "title": "Addicted to Outrage: How Thinking Like a Recovering Addict Can Heal the Country",
+   "author": "Glenn Beck",
+   "genre": "Political Commentary",
+   "first_published": "2018",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "Dark Future",
+   "title": "Dark Future: Uncovering the Great Reset's Terrifying Next Phase",
+   "author": "Glenn Beck",
+   "genre": "Political Commentary",
+   "first_published": "2023",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "The Jefferson Lies",
+   "title": "The Jefferson Lies: Exposing the Myths You've Always Believed About Thomas Jefferson",
+   "author": "David Barton",
+   "genre": "History",
+   "first_published": "2012",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "Tesla vs Edison",
+   "title": "Tesla vs Edison: The Life-Long Feud that Electrified the World",
+   "author": "Nigel Cawthorne",
+   "genre": "Biography",
+   "first_published": "2016",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "medium",
+   "notes": "title matches the Nigel Cawthorne book; multiple similarly-titled works exist so identity is not certain"
+  },
+  {
+   "orig_title": "Ghost Wars",
+   "title": "Ghost Wars: The Secret History of the CIA, Afghanistan, and Bin Laden, from the Soviet Invasion to September 10, 2001",
+   "author": "Steve Coll",
+   "genre": "History",
+   "first_published": "2004",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": "Pulitzer Prize winner for General Nonfiction"
+  },
+  {
+   "orig_title": "The Journal of Major George Washington",
+   "title": "The Journal of Major George Washington",
+   "author": "George Washington",
+   "genre": "History",
+   "first_published": "1754",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": "Washington's 1753-54 mission journal to the Ohio Country; commonly reprinted in facsimile"
+  },
+  {
+   "orig_title": "Radium Girls",
+   "title": "The Radium Girls: The Dark Story of America's Shining Women",
+   "author": "Kate Moore",
+   "genre": "History",
+   "first_published": "2016",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": "First UK edition 2016; US edition 2017"
+  },
+  {
+   "orig_title": "Chaos: Charles Manson, the CIA",
+   "title": "Chaos: Charles Manson, the CIA, and the Secret History of the Sixties",
+   "author": "Tom O'Neill",
+   "genre": "True Crime",
+   "first_published": "2019",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": "Co-written with Dan Piepenbring"
+  },
+  {
+   "orig_title": "Disinformation",
+   "title": "Disinformation: Former Spy Chief Reveals Secret Strategies for Undermining Freedom, Attacking Religion, and Promoting Terrorism",
+   "author": "Ion Mihai Pacepa and Ronald J. Rychlak",
+   "genre": "Political Commentary",
+   "first_published": "2013",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "medium",
+   "notes": "Title is common; most likely the 2013 Pacepa/Rychlak book given the shelf's intelligence/CIA theme, but title alone is ambiguous"
+  },
+  {
+   "orig_title": "Blindsided",
+   "title": "Blindsided",
+   "author": "",
+   "genre": "",
+   "first_published": "",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "low",
+   "notes": "Title too common (many books titled Blindsided) to identify the specific work with confidence"
+  },
+  {
+   "orig_title": "On the Wild Edge",
+   "title": "On the Wild Edge: In Search of a Natural Life",
+   "author": "David Petersen",
+   "genre": "Memoir",
+   "first_published": "2005",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "medium",
+   "notes": "Most likely David Petersen's nature memoir; fits the homesteading/outdoor theme of the shelf but title alone is not unique"
+  },
+  {
+   "orig_title": "Foxfire",
+   "title": "The Foxfire Book",
+   "author": "Eliot Wigginton",
+   "genre": "Homesteading",
+   "first_published": "1972",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": "Foxfire series of Appalachian folk-skills books; edited by Wigginton, first volume 1972; likely several volumes"
+  },
+  {
+   "orig_title": "Homesteading from Scratch",
+   "title": "Homesteading from Scratch",
+   "author": "",
+   "genre": "Homesteading",
+   "first_published": "",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "low",
+   "notes": "Common self-published homesteading title; cannot confidently pin the specific author or year"
+  },
+  {
+   "orig_title": "Practical Blacksmithing",
+   "title": "Practical Blacksmithing",
+   "author": "M.T. Richardson",
+   "genre": "Blacksmithing",
+   "first_published": "1889",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": "Originally published in four volumes 1889-1891; commonly reprinted as a single compiled edition"
+  },
+  {
+   "orig_title": "Heirloom Skills",
+   "title": "Heirloom Skills: A Complete Guide to Modern Homesteading",
+   "author": "Kelsey Steffen",
+   "genre": "Homesteading",
+   "first_published": "2023",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "low",
+   "notes": "Likely the modern homesteading guide by Kelsey Steffen, but not certain of the exact author/year"
+  },
+  {
+   "orig_title": "The Self-Sufficient Life and How to Live It",
+   "title": "The Self-Sufficient Life and How to Live It",
+   "author": "John Seymour",
+   "genre": "Homesteading",
+   "first_published": "1976",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": "Updated/retitled edition of Seymour's classic 'The Complete Book of Self-Sufficiency' (1976)"
+  },
+  {
+   "orig_title": "Goat Medicine",
+   "title": "Goat Medicine",
+   "author": "Mary C. Smith and David M. Sherman",
+   "genre": "Veterinary Reference",
+   "first_published": "1994",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": "Standard veterinary reference; 2nd edition 2009"
+  },
+  {
+   "orig_title": "Plantopedia",
+   "title": "Plantopedia: The Definitive Guide to House Plants",
+   "author": "Lauren Camilleri and Sophia Kaplan",
+   "genre": "Gardening",
+   "first_published": "2020",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": "By the Leaf Supply authors (Camilleri & Kaplan)"
+  },
+  {
+   "orig_title": "National Parks",
+   "title": "National Parks",
+   "author": "",
+   "genre": "Nonfiction",
+   "first_published": "",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "low",
+   "notes": "Generic title matches many books (e.g. National Geographic Guide to National Parks, The National Parks: America's Best Idea); cannot confidently identify which edition/author from title alone"
+  },
+  {
+   "orig_title": "Ball Complete Book of Home Preserving",
+   "title": "Ball Complete Book of Home Preserving",
+   "author": "Judi Kingry and Lauren Devine",
+   "genre": "Cookbook",
+   "first_published": "2006",
+   "shelf": "Nonfiction bookcase",
+   "confidence": "high",
+   "notes": "Editors Judi Kingry and Lauren Devine; canning/preserving reference"
+  },
+  {
+   "orig_title": "The Tale of Peter Rabbit",
+   "title": "The Tale of Peter Rabbit",
+   "author": "Beatrix Potter",
+   "genre": "Children's",
+   "first_published": "1902",
+   "shelf": "Children's (top shelf)",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "Charlotte's Web",
+   "title": "Charlotte's Web",
+   "author": "E.B. White",
+   "genre": "Children's",
+   "first_published": "1952",
+   "shelf": "Children's (top shelf)",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "The Complete Tales of Winnie-the-Pooh",
+   "title": "The Complete Tales of Winnie-the-Pooh",
+   "author": "A.A. Milne",
+   "genre": "Children's",
+   "first_published": "1926",
+   "shelf": "Children's (top shelf)",
+   "confidence": "high",
+   "notes": "Collects Winnie-the-Pooh (1926) and The House at Pooh Corner (1928); year given is first Pooh book"
+  },
+  {
+   "orig_title": "Horton Hatches the Egg",
+   "title": "Horton Hatches the Egg",
+   "author": "Dr. Seuss",
+   "genre": "Children's",
+   "first_published": "1940",
+   "shelf": "Children's (top shelf)",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "Where the Sidewalk Ends",
+   "title": "Where the Sidewalk Ends",
+   "author": "Shel Silverstein",
+   "genre": "Children's Poetry",
+   "first_published": "1974",
+   "shelf": "Children's (top shelf)",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "Every Thing On It",
+   "title": "Every Thing On It",
+   "author": "Shel Silverstein",
+   "genre": "Children's Poetry",
+   "first_published": "2011",
+   "shelf": "Children's (top shelf)",
+   "confidence": "high",
+   "notes": "Posthumous poetry collection"
+  },
+  {
+   "orig_title": "Go, Dog. Go!",
+   "title": "Go, Dog. Go!",
+   "author": "P.D. Eastman",
+   "genre": "Children's",
+   "first_published": "1961",
+   "shelf": "Children's (top shelf)",
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "orig_title": "Bedtime Stories",
+   "title": "Bedtime Stories",
+   "author": "",
+   "genre": "Children's",
+   "first_published": "",
+   "shelf": "Children's (top shelf)",
+   "confidence": "low",
+   "notes": "Generic anthology title used by many publishers; cannot identify a specific book or author from title alone"
+  },
+  {
+   "orig_title": "The House of Secrets",
+   "title": "House of Secrets",
+   "author": "Chris Columbus and Ned Vizzini",
+   "genre": "Children's Fantasy",
+   "first_published": "2013",
+   "shelf": "Children's (top shelf)",
+   "confidence": "high",
+   "notes": "Middle-grade fantasy; first in the House of Secrets series"
+  },
+  {
+   "orig_title": "The Bobbsey Twins in the Country",
+   "title": "The Bobbsey Twins in the Country",
+   "author": "Laura Lee Hope",
+   "genre": "Children's",
+   "first_published": "1907",
+   "shelf": "Children's (top shelf)",
+   "confidence": "high",
+   "notes": "\"Laura Lee Hope\" is a Stratemeyer Syndicate house pseudonym; second Bobbsey Twins book"
+  },
+  {
+   "orig_title": "The Random House Book of Mother Goose",
+   "title": "The Random House Book of Mother Goose",
+   "author": "Arnold Lobel",
+   "genre": "Children's",
+   "first_published": "1986",
+   "shelf": "Children's (top shelf)",
+   "confidence": "high",
+   "notes": "Selected and illustrated by Arnold Lobel"
+  },
+  {
+   "orig_title": "Hans Christian Andersen Fairytales",
+   "title": "Hans Christian Andersen's Fairy Tales",
+   "author": "Hans Christian Andersen",
+   "genre": "Children's",
+   "first_published": "1835",
+   "shelf": "Children's (top shelf)",
+   "confidence": "high",
+   "notes": "Collection; Andersen's first fairy tale booklet appeared 1835"
+  },
+  {
+   "orig_title": "The Foot Book",
+   "title": "The Foot Book",
+   "author": "Dr. Seuss",
+   "genre": "Children's",
+   "first_published": "1968",
+   "shelf": "Children's (top shelf)",
+   "confidence": "high",
+   "notes": "Dr. Seuss's Book of Wonderful Noises; Bright and Early Books beginner reader"
+  },
+  {
+   "orig_title": "My Feet Go",
+   "title": "My Feet Go",
+   "author": "",
+   "genre": "Children's",
+   "first_published": "",
+   "shelf": "Children's (top shelf)",
+   "confidence": "low",
+   "notes": "Could not confidently identify a single canonical book/author from this short title; multiple children's board books share similar titles"
+  },
+  {
+   "orig_title": "The Works of Will Carleton",
+   "title": "The Works of Will Carleton",
+   "author": "Will Carleton",
+   "genre": "Poetry",
+   "first_published": "",
+   "shelf": "Children's (top shelf)",
+   "confidence": "medium",
+   "notes": "Will Carleton (1845-1912), American poet known for 'Farm Ballads'; this is a collected-works volume, exact edition/first-published year uncertain"
+  }
+ ]
+}
