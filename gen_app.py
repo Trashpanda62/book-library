@@ -560,26 +560,33 @@ function openReader(eid,title){
   // clear any prior epub iframe (keep the nav + loader children)
   host.querySelectorAll("iframe,.epub-container,.epub-view").forEach(n=>n.remove());
   const fs=+(localStorage.getItem("lib_read_fs")||105);
-  try{
-    _rbook=ePub(syncURL()+"/ebook/"+eid);
-    _rendition=_rbook.renderTo("rview",{width:"100%",height:"100%",flow:"paginated",spread:"none",minSpreadWidth:99999});
-    _rendition.themes.register("clean",{
-      "body":{"margin":"0","padding":"0 16px","text-align":"left","line-height":"1.5","hyphens":"auto","-webkit-hyphens":"auto"},
-      "p":{"text-align":"left","margin":"0 0 .85em","text-indent":"1.2em","hyphens":"auto","-webkit-hyphens":"auto","widows":"2","orphans":"2"},
-      "div,li,span,td,dd,blockquote":{"text-align":"left"},
-      "h1,h2,h3,h4":{"text-align":"left"},
-      "img":{"max-width":"100%","height":"auto"}
-    });
-    _rendition.themes.select("clean");
-    _rendition.themes.fontSize(fs+"%");
-    const pos=localStorage.getItem("lib_pos_"+eid);
-    _rendition.display(pos||undefined).then(()=>{ document.getElementById("rload").style.display="none"; });
-    _rendition.on("rendered",()=>{ document.getElementById("rload").style.display="none"; });
-    _rendition.on("relocated",loc=>{
-      try{ if(loc&&loc.start){ localStorage.setItem("lib_pos_"+eid,loc.start.cfi);
-        const p=loc.start.percentage; if(p!=null) document.getElementById("rpct").textContent=Math.round(p*100)+"%"; } }catch(e){}
-    });
-  }catch(e){ document.getElementById("rload").textContent="Couldn't open this book."; }
+  const rload=document.getElementById("rload");
+  // Fetch the epub as bytes and hand epub.js the ArrayBuffer — passing the URL directly
+  // makes epub.js treat the (extension-less) path as an UNPACKED directory and it never unzips.
+  fetch(syncURL()+"/ebook/"+eid,{cache:"force-cache"})
+    .then(r=>{ if(!r.ok) throw new Error("HTTP "+r.status); return r.arrayBuffer(); })
+    .then(buf=>{
+      _rbook=ePub(buf);
+      _rendition=_rbook.renderTo("rview",{width:"100%",height:"100%",flow:"paginated",spread:"none",minSpreadWidth:99999});
+      _rendition.themes.register("clean",{
+        "body":{"margin":"0","padding":"0 16px","text-align":"left","line-height":"1.5","hyphens":"auto","-webkit-hyphens":"auto"},
+        "p":{"text-align":"left","margin":"0 0 .85em","text-indent":"1.2em","hyphens":"auto","-webkit-hyphens":"auto","widows":"2","orphans":"2"},
+        "div,li,span,td,dd,blockquote":{"text-align":"left"},
+        "h1,h2,h3,h4":{"text-align":"left"},
+        "img":{"max-width":"100%","height":"auto"}
+      });
+      _rendition.themes.select("clean");
+      _rendition.themes.fontSize(fs+"%");
+      const pos=localStorage.getItem("lib_pos_"+eid);
+      _rendition.on("rendered",()=>{ rload.style.display="none"; });
+      _rendition.on("relocated",loc=>{
+        try{ if(loc&&loc.start){ localStorage.setItem("lib_pos_"+eid,loc.start.cfi);
+          const p=loc.start.percentage; if(p!=null) document.getElementById("rpct").textContent=Math.round(p*100)+"%"; } }catch(e){}
+      });
+      return _rendition.display(pos||undefined);
+    })
+    .then(()=>{ rload.style.display="none"; })
+    .catch(e=>{ rload.textContent="Couldn't load this book ("+(e&&e.message||e)+")"; });
 }
 function openReaderBook(libId){ const b=books.find(x=>x.id==libId); if(!b) return; const eb=ebookFor(b); if(!eb){ toast("No ebook available yet"); return; } openReader(eb.id, b.title); }
 function readerNav(dir){ if(_rendition){ dir<0?_rendition.prev():_rendition.next(); } }
