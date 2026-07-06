@@ -701,8 +701,12 @@ function openBook(id){
   resolveCover(b).then(url=>{ if(url){ const img=new Image(); img.onload=()=>{dc.querySelector(".mph").style.display="none";dc.insertBefore(img,dc.firstChild);}; img.src=url; } });
   openSheet();
 }
-function openSheet(){ document.getElementById("scrim").classList.add("on"); document.getElementById("sheet").classList.add("on"); }
-function closeSheet(){ document.getElementById("scrim").classList.remove("on"); document.getElementById("sheet").classList.remove("on"); }
+let sheetOpen=false, navTarget=null;
+function openSheet(){ document.getElementById("scrim").classList.add("on"); document.getElementById("sheet").classList.add("on");
+  if(!sheetOpen){ sheetOpen=true; try{ history.pushState({modal:1}, ""); }catch(e){} } }
+function hideSheetUI(){ document.getElementById("scrim").classList.remove("on"); document.getElementById("sheet").classList.remove("on"); stopScanner(); sheetOpen=false; }
+function closeSheet(){ if(sheetOpen){ hideSheetUI(); if(history.state && history.state.modal){ history.back(); } } else hideSheetUI(); }
+function closeSheetTo(v){ navTarget=v; if(sheetOpen){ hideSheetUI(); if(history.state && history.state.modal){ history.back(); } else { applyView(v); } } else { applyView(v); } }
 
 function openWish(key){
   const w = wishlist.find(x=>x.key===key); if(!w) return;
@@ -722,7 +726,7 @@ function openWish(key){
     <div class="sect"><h4>Local to Livingston, TN</h4><div class="btns">${bl.local}</div></div>
     <div class="sect"><h4>Buy online</h4><div class="btns">${bl.online}</div></div>
     <div class="sect">
-      ${owned?"":`<button class="imp" onclick="gotIt('${esc(w.key)}');closeSheet();setTab('library');toast('Moved to your library ✓');">✓ I got this — move to Library</button>`}
+      ${owned?"":`<button class="imp" onclick="gotIt('${esc(w.key)}');closeSheetTo('library');toast('Moved to your library ✓');">✓ I got this — move to Library</button>`}
       <button class="imp sec" onclick="toggleWishPriority('${esc(w.key)}')">${w.priority?"★ Priority (tap to unstar)":"☆ Mark as priority"}</button>
       <button class="imp sec danger" onclick="removeWish('${esc(w.key)}');closeSheet();render();toast('Removed from wishlist');">Remove from wishlist</button>
     </div>`;
@@ -780,7 +784,7 @@ function submitAddBook(){
   const g=v=>document.getElementById(v).value.trim();
   const t=g("a_title"); if(!t){ toast("Enter a title"); return; }
   books.push({ id:nextId(), title:t, author:g("a_author"), genre:g("a_genre")||"Uncategorized", year:g("a_year"), shelf:"Added", series:"", placeholder:false, isbn:"", cover:"", status:"toread", rating:0, notes:"", added:Date.now() });
-  persist(); closeSheet(); setTab("library"); toast("Added to library");
+  persist(); closeSheetTo("library"); toast("Added to library");
 }
 
 /* ---------- add-by-ISBN / barcode scan ---------- */
@@ -850,7 +854,7 @@ function stamp(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMon
 function backupJSON(){ download("our-library-backup-"+stamp()+".json", JSON.stringify({version:2, exported:Date.now(), books, wishlist}, null, 1)); toast("Backup downloaded"); }
 function restoreJSON(e){ const f=e.target.files[0]; if(!f) return; const rd=new FileReader();
   rd.onload=()=>{ try{ const d=JSON.parse(rd.result); if(!Array.isArray(d.books)) throw 0;
-    books=d.books; wishlist=d.wishlist||[]; persist(); saveWish(); closeSheet(); setTab("library"); toast("Restored "+books.length+" books"); }
+    books=d.books; wishlist=d.wishlist||[]; persist(); saveWish(); closeSheetTo("library"); toast("Restored "+books.length+" books"); }
     catch(_){ toast("That isn't a valid backup file"); } };
   rd.readAsText(f); }
 function csvCell(s){ s=(s==null?"":String(s)); return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; }
@@ -908,7 +912,7 @@ function submitAddWish(){
   const a=(document.getElementById("wauthor").value||"").trim();
   if(!t){ toast("Enter a title"); return; }
   const added = addWish({title:t, author:a});
-  closeSheet(); view="wishlist"; setTab("wishlist");
+  closeSheetTo("wishlist");
   toast(added?"Added to wishlist ♥":"Already on the wishlist");
 }
 
@@ -996,15 +1000,22 @@ function handleCSV(e){
           isbn, confidence:"import", notes:"" });
       }
       if(!out.length){ toast("No rows found — is this a Libib CSV?"); return; }
-      books=out; persist(); closeSheet(); setTab("library"); render();
+      books=out; persist(); closeSheetTo("library");
       toast("Imported "+out.length+" books from Libib");
     }catch(err){ toast("Could not read that CSV"); }
   };
   rd.readAsText(f);
 }
 
-/* ---------- ui wiring ---------- */
-function setTab(v){ view=v; try{localStorage.setItem("lib_view",v);}catch(e){} document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===v)); render(); }
+/* ---------- ui wiring + history (back button) ---------- */
+function applyView(v){ view=v; try{localStorage.setItem("lib_view",v);}catch(e){} document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===v)); render(); }
+function setTab(v){ if(v!==view){ try{ history.pushState({view:v}, ""); }catch(e){} } applyView(v); }
+addEventListener("popstate",(e)=>{
+  // 1) an open sheet: back closes it (not the app)
+  if(document.getElementById("sheet").classList.contains("on")){ hideSheetUI(); return; }
+  // 2) tab-level back: return to the previous view; only exits from here if history is exhausted
+  const v = navTarget || (e.state && e.state.view) || "library"; navTarget=null; applyView(v);
+});
 document.getElementById("tabs").addEventListener("click",e=>{ const b=e.target.closest("button"); if(b) setTab(b.dataset.v); });
 document.getElementById("sort").addEventListener("change",e=>{ sortBy=e.target.value; try{localStorage.setItem("lib_sort",sortBy);}catch(e){} render(); });
 document.getElementById("groupby").addEventListener("change",e=>{ groupBy=e.target.value; try{localStorage.setItem("lib_group",groupBy);}catch(e){} updateLayoutVis(); render(); });
@@ -1015,7 +1026,7 @@ document.getElementById("q").addEventListener("input",e=>{ query=e.target.value;
 document.getElementById("filterbar").addEventListener("click",e=>{ const b=e.target.closest(".chip"); if(!b) return;
   statusFilter=b.dataset.f; document.querySelectorAll("#filterbar .chip").forEach(c=>c.classList.toggle("on",c===b)); render(); });
 document.getElementById("gear").addEventListener("click",openSettings);
-document.getElementById("scrim").addEventListener("click",()=>{ stopScanner(); closeSheet(); });
+document.getElementById("scrim").addEventListener("click",()=>{ closeSheet(); });
 document.addEventListener("click",e=>{ const w=e.target.closest("[data-wishadd]"); if(w){ e.stopPropagation(); toggleWishEntry(w.dataset.series, w.dataset.title); } });
 let toastT; function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.classList.add("on"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("on"),2600); }
 
@@ -1035,6 +1046,7 @@ if("serviceWorker" in navigator){ addEventListener("load",()=>navigator.serviceW
   const so=document.getElementById("sort"); if(so) so.value=sortBy;
   document.querySelectorAll("#layout button").forEach(x=>x.classList.toggle("on",x.dataset.l===layout));
   updateLayoutVis();
+  try{ history.replaceState({view:view}, ""); }catch(e){}   // seed history so back is well-defined
 })();
 // auto-pull latest on launch if sync is configured
 if(syncURL()) pullSync(true);
