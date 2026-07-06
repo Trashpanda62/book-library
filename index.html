@@ -19,7 +19,7 @@
   --accent:#b8683f; --up:#8a6d3b; --shadow:0 2px 8px rgba(60,50,30,.10);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;padding:0}
+html,body{margin:0;padding:0;overflow-x:hidden}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   background:var(--paper);color:var(--ink);font-size:15px;line-height:1.4;
   padding-bottom:env(safe-area-inset-bottom)}
@@ -247,17 +247,22 @@ html[data-theme="dark"] .danger{background:var(--card)}
 .setgrp{margin-top:16px}
 .setlab{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:2px}
 .setgrp .imp{margin-top:8px}
-/* shelf visualization */
-.shelfwrap{margin-bottom:20px}
-.shelfhdr{font-size:12px;font-weight:700;color:var(--sage-dark);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+/* shelf / bookcase visualization — real cover art standing on wooden shelves */
+.shelfwrap{margin-bottom:16px}
+.shelfhdr{font-size:12px;font-weight:700;color:var(--sage-dark);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
 .shelfhdr span{color:var(--muted);font-weight:600}
-.shelf{display:flex;flex-wrap:wrap;align-items:flex-end;gap:2px;padding:12px 8px 0;
-  background:linear-gradient(180deg,rgba(0,0,0,.03),transparent);border-bottom:9px solid #6b4e34;
-  border-radius:3px;box-shadow:inset 0 -12px 14px -12px rgba(0,0,0,.35)}
-.spine{writing-mode:vertical-rl;text-orientation:mixed;color:#fff;font-size:10px;font-weight:700;line-height:1.05;
-  padding:9px 3px;border-radius:3px 3px 0 0;cursor:pointer;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
-  box-shadow:1px 0 2px rgba(0,0,0,.25);border-top:2px solid rgba(255,255,255,.18)}
-.spine:active{filter:brightness(1.15)}
+.shelf{display:flex;flex-wrap:wrap;align-items:flex-end;gap:7px 6px;padding:16px 12px 0;
+  background:linear-gradient(180deg,rgba(120,86,52,.10),transparent 60%);
+  border-bottom:11px solid #6b4e34;border-radius:4px;
+  box-shadow:inset 0 -16px 18px -14px rgba(0,0,0,.45), 0 3px 0 #543c28}
+.shelfbook{width:48px;height:72px;flex:none;border-radius:2px 3px 3px 2px;overflow:hidden;cursor:pointer;
+  position:relative;background:var(--sage-light);
+  box-shadow:1px 3px 5px rgba(0,0,0,.35), inset 2px 0 3px -1px rgba(255,255,255,.25), inset -2px 0 3px -1px rgba(0,0,0,.3)}
+.shelfbook img{width:100%;height:100%;object-fit:cover;display:block}
+.shelfbook .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:2px;color:#fff}
+.shelfbook .ph span{writing-mode:vertical-rl;text-orientation:mixed;font-size:8px;font-weight:700;line-height:1.05;
+  max-height:100%;overflow:hidden;text-align:center}
+.shelfbook:active{transform:translateY(-3px)}
 </style>
 </head>
 <body>
@@ -531,8 +536,8 @@ function renderWishlist(m){
   const items = wishlist.filter(w=>!q||norm(w.title).includes(q)||norm(w.author).includes(q)||norm(w.series).includes(q))
     .sort((a,b)=> (b.priority?1:0)-(a.priority?1:0) || (a.status==="upcoming"?1:0)-(b.status==="upcoming"?1:0) || norm(a.title).localeCompare(norm(b.title)));
   const addBar = `<div style="display:flex;gap:8px;margin:0 0 12px">
-    <button class="imp" style="margin:0;flex:1" onclick="openAddWish()">＋ Add a book</button>
-    <button class="imp sec" style="margin:0;flex:none;padding:13px 16px" onclick="shareWishlist()">🔗 Share</button></div>`;
+    <button class="imp" style="margin:0;flex:1 1 auto;width:auto;min-width:0" onclick="openAddWish()">＋ Add a book</button>
+    <button class="imp sec" style="margin:0;flex:0 0 auto;width:auto;padding:13px 18px" onclick="shareWishlist()">🔗 Share</button></div>`;
   if(!wishlist.length){
     m.innerHTML = addBar + `<div id="suggestbox"></div>` + `<div class="empty">Your wishlist is empty.<br><span style="font-size:12.5px">Open the <b>Series</b> tab and tap any book you're missing or an upcoming release to add it here — or use the button above.</span></div>`;
     loadSuggestions(); return;
@@ -636,16 +641,15 @@ const GENRE_COLOR={ "Mystery & Thriller":"#7c4a3a","Historical Fiction":"#4d6455
   "Health & Self-Help":"#2f7161","History & Politics":"#5a3a3a","Home & Reference":"#356048" };
 const genreColor = g => GENRE_COLOR[topGenre(g)] || "#5b7263";
 function renderShelf(m,data){
-  document.getElementById("viewnote").textContent = data.length+" spines";
+  document.getElementById("viewnote").textContent = data.length+" books";
   const groups={}; data.forEach(b=>{ const s=b.shelf||"Unshelved"; (groups[s]=groups[s]||[]).push(b); });
   const names=Object.keys(groups).sort((a,b)=>groups[b].length-groups[a].length||a.localeCompare(b));
   m.innerHTML = names.map(n=>`<div class="shelfwrap">
     <div class="shelfhdr">${esc(n)} <span>${groups[n].length}</span></div>
-    <div class="shelf">${groups[n].map(b=>{
-      const len=(b.title||"").length; const w=Math.max(20,Math.min(36,17+Math.round(len/3.5)));
-      const h=120+((len*13)%56); const light=(topGenre(b.genre)==="Children's & YA");
-      return `<div class="spine" onclick="openBook(${b.id})" style="width:${w}px;height:${h}px;background:${genreColor(b.genre)}${light?';color:#3a2a12':''}" title="${esc(b.title)} — ${esc(b.author)}">${esc(b.title)}</div>`;
-    }).join("")}</div></div>`).join("");
+    <div class="shelf">${groups[n].map(b=>`
+      <div class="shelfbook" data-id="${b.id}" onclick="openBook(${b.id})" title="${esc(b.title)} — ${esc(b.author)}">
+        <div class="ph" style="background:${genreColor(b.genre)}"><span>${esc(b.title)}</span></div>
+      </div>`).join("")}</div></div>`).join("");
 }
 
 function renderGroups(m,data,key){
