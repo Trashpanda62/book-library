@@ -382,6 +382,23 @@ html[data-theme="dark"] .danger{background:var(--card)}
 .shelfbook .ph span{writing-mode:vertical-rl;text-orientation:mixed;font-size:8px;font-weight:700;line-height:1.05;
   max-height:100%;overflow:hidden;text-align:center}
 .shelfbook:active{transform:translateY(-3px)}
+/* ---------- in-app ebook reader ---------- */
+.readbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:2px 0 4px;padding:13px;border:0;border-radius:12px;
+  background:var(--sage);color:#fff;font-size:15px;font-weight:700;cursor:pointer;box-shadow:var(--shadow)}
+.readbtn:active{transform:translateY(1px)}
+.readbtn.sec{background:var(--card);color:var(--sage);border:1.5px solid var(--sage);box-shadow:none}
+#reader{position:fixed;inset:0;z-index:400;background:var(--paper);display:none;flex-direction:column}
+#reader.on{display:flex}
+#reader .rbar{display:flex;align-items:center;gap:2px;padding:8px 6px;background:var(--card);border-bottom:1px solid var(--line);flex:0 0 auto}
+#reader .rtitle{flex:1;min-width:0;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink);padding:0 6px}
+#reader .rbtn{border:0;background:transparent;font-size:16px;font-weight:700;padding:8px 11px;cursor:pointer;color:var(--ink);border-radius:9px;line-height:1}
+#reader .rbtn:active{background:var(--line)}
+#reader .rview{flex:1;position:relative;overflow:hidden}
+#reader .rnav{position:absolute;top:0;bottom:0;width:26%;z-index:3}
+#reader .rnav.prev{left:0}
+#reader .rnav.next{right:0}
+#reader .rload{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;z-index:1}
+#reader .rfoot{flex:0 0 auto;text-align:center;font-size:11px;color:var(--muted);padding:5px}
 </style>
 </head>
 <body>
@@ -437,6 +454,20 @@ html[data-theme="dark"] .danger{background:var(--card)}
 
 <div class="scrim" id="scrim"></div>
 <div class="sheet" id="sheet"><div class="grab"></div><div id="sheetbody"></div></div>
+<div id="reader">
+  <div class="rbar">
+    <button class="rbtn" onclick="closeReader()" aria-label="Close">&#10005;</button>
+    <div class="rtitle" id="rtitle"></div>
+    <button class="rbtn" onclick="readerFont(-10)" aria-label="Smaller text">A&#8722;</button>
+    <button class="rbtn" onclick="readerFont(10)" aria-label="Larger text">A+</button>
+  </div>
+  <div class="rview" id="rview"><div class="rload" id="rload">Opening book&#8230;</div>
+    <div class="rnav prev" onclick="readerNav(-1)"></div><div class="rnav next" onclick="readerNav(1)"></div>
+  </div>
+  <div class="rfoot"><span id="rpct">0%</span></div>
+</div>
+<script>/*JSZIP*/</script>
+<script>/*EPUBJS*/</script>
 <div class="toast" id="toast"></div>
 
 <!-- hidden settings sheet reuses .sheet via id -->
@@ -495,6 +526,76 @@ async function pullSync(silent){
     } else if(!silent) toast("Already up to date");
   }catch(e){ if(!silent) toast("Sync failed — endpoint offline"); }
 }
+
+/* ---------- in-app ebook reader (epub.js over the sync host's /ebook proxy) ---------- */
+let EBOOKS={}, _rendition=null, _rbook=null;
+const normT = s => (s||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+async function pullEbooks(){
+  const url=syncURL(); if(!url) return;
+  try{
+    const r=await fetch(url+"/ebooks",{cache:"no-store"}); if(!r.ok) return;
+    const list=await r.json(); const m={};
+    (list||[]).forEach(e=>{ if(e&&e.title) m[normT(e.title)]=e; });
+    EBOOKS=m; render();
+  }catch(e){}
+}
+function ebookFor(b){
+  if(!b || !EBOOKS) return null;
+  const t=normT(b.title); if(t.length<3) return null;
+  if(EBOOKS[t]) return EBOOKS[t];
+  for(const k in EBOOKS){                       // subtitle-tolerant (CWA titles often carry a subtitle)
+    if(k===t) return EBOOKS[k];
+    if((k.startsWith(t)||t.startsWith(k)) && Math.min(k.length,t.length)>=6) return EBOOKS[k];
+  }
+  return null;
+}
+function openReader(eid,title){
+  const R=document.getElementById("reader");
+  document.getElementById("rtitle").textContent=title||"";
+  document.getElementById("rload").style.display="flex";
+  R.classList.add("on");
+  R.classList.toggle("dark", localStorage.getItem("lib_theme")==="dark");
+  try{ history.pushState({reader:1},""); }catch(e){}
+  const host=document.getElementById("rview");
+  // clear any prior epub iframe (keep the nav + loader children)
+  host.querySelectorAll("iframe,.epub-container,.epub-view").forEach(n=>n.remove());
+  const fs=+(localStorage.getItem("lib_read_fs")||105);
+  try{
+    _rbook=ePub(syncURL()+"/ebook/"+eid);
+    _rendition=_rbook.renderTo("rview",{width:"100%",height:"100%",flow:"paginated",spread:"none",minSpreadWidth:99999});
+    _rendition.themes.register("clean",{
+      "body":{"margin":"0","padding":"0 16px","text-align":"left","line-height":"1.5","hyphens":"auto","-webkit-hyphens":"auto"},
+      "p":{"text-align":"left","margin":"0 0 .85em","text-indent":"1.2em","hyphens":"auto","-webkit-hyphens":"auto","widows":"2","orphans":"2"},
+      "div,li,span,td,dd,blockquote":{"text-align":"left"},
+      "h1,h2,h3,h4":{"text-align":"left"},
+      "img":{"max-width":"100%","height":"auto"}
+    });
+    _rendition.themes.select("clean");
+    _rendition.themes.fontSize(fs+"%");
+    const pos=localStorage.getItem("lib_pos_"+eid);
+    _rendition.display(pos||undefined).then(()=>{ document.getElementById("rload").style.display="none"; });
+    _rendition.on("rendered",()=>{ document.getElementById("rload").style.display="none"; });
+    _rendition.on("relocated",loc=>{
+      try{ if(loc&&loc.start){ localStorage.setItem("lib_pos_"+eid,loc.start.cfi);
+        const p=loc.start.percentage; if(p!=null) document.getElementById("rpct").textContent=Math.round(p*100)+"%"; } }catch(e){}
+    });
+  }catch(e){ document.getElementById("rload").textContent="Couldn't open this book."; }
+}
+function openReaderBook(libId){ const b=books.find(x=>x.id==libId); if(!b) return; const eb=ebookFor(b); if(!eb){ toast("No ebook available yet"); return; } openReader(eb.id, b.title); }
+function readerNav(dir){ if(_rendition){ dir<0?_rendition.prev():_rendition.next(); } }
+function readerFont(delta){
+  let fs=+(localStorage.getItem("lib_read_fs")||105)+delta; fs=Math.max(75,Math.min(190,fs));
+  localStorage.setItem("lib_read_fs",fs); if(_rendition){ try{_rendition.themes.fontSize(fs+"%");}catch(e){} }
+}
+function closeReader(){
+  const R=document.getElementById("reader"); if(!R.classList.contains("on")) return;
+  R.classList.remove("on");
+  if(_rendition){ try{_rendition.destroy();}catch(e){} _rendition=null; }
+  if(_rbook){ try{_rbook.destroy();}catch(e){} _rbook=null; }
+  if(history.state && history.state.reader){ try{history.back();}catch(e){} }
+}
+document.addEventListener("keydown",e=>{ if(!document.getElementById("reader").classList.contains("on"))return;
+  if(e.key==="ArrowLeft")readerNav(-1); else if(e.key==="ArrowRight")readerNav(1); else if(e.key==="Escape")closeReader(); });
 
 /* ---------- wishlist ---------- */
 let wishlist = (()=>{ try{ return JSON.parse(localStorage.getItem("lib_wishlist")||"[]"); }catch(e){ return []; } })();
@@ -927,6 +1028,7 @@ function buyLinks(b){
 function openBook(id){
   const b=books.find(x=>x.id==id); if(!b) return;
   const bl=buyLinks(b);
+  const eb=ebookFor(b);
   let seriesBlock="";
   if(b.series){
     const s=seriesMatch(b.series);
@@ -957,6 +1059,7 @@ function openBook(id){
       </div>
     </div>
     ${b.notes?`<div class="dnotes">${esc(b.notes)}</div>`:""}
+    ${eb?`<div class="sect"><button class="readbtn" onclick="openReaderBook(${b.id})">📖 Read this book</button></div>`:""}
     <div class="sect"><h4>Reading status${b.finished?` · finished ${esc(b.finished)}`:""}</h4>${statusSeg}<div style="margin-top:12px">${stars}</div></div>
     ${seriesBlock}
     <div class="sect"><h4>Borrow — free</h4><div class="btns">${bl.borrow}</div></div>
@@ -1354,6 +1457,12 @@ function applyImport(merge){
 function applyView(v){ view=v; try{localStorage.setItem("lib_view",v);}catch(e){} document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===v)); render(); }
 function setTab(v){ if(v!==view){ try{ history.pushState({view:v}, ""); }catch(e){} } applyView(v); }
 addEventListener("popstate",(e)=>{
+  // 0) an open reader: back closes it (not the app)
+  if(document.getElementById("reader").classList.contains("on")){
+    const R=document.getElementById("reader"); R.classList.remove("on");
+    if(_rendition){ try{_rendition.destroy();}catch(x){} _rendition=null; }
+    if(_rbook){ try{_rbook.destroy();}catch(x){} _rbook=null; } return;
+  }
   // 1) an open sheet: back closes it (not the app)
   if(document.getElementById("sheet").classList.contains("on")){ hideSheetUI(); return; }
   // 2) tab-level back: return to the previous view; only exits from here if history is exhausted
@@ -1435,6 +1544,7 @@ if(isShare()){
     try{ history.replaceState({view:view}, ""); }catch(e){}   // seed history so back is well-defined
   })();
   if(syncURL()) pullSync(true);   // auto-pull latest on launch if sync is configured
+  if(syncURL()) pullEbooks();     // load which owned books have a readable ebook
   render();
 }
 </script>
@@ -1442,10 +1552,18 @@ if(isShare()){
 </html>
 """
 
+def _lib(fn):
+    p = os.path.join(HERE, "libs", fn)
+    with open(p, "r", encoding="utf-8") as f:
+        return f.read()
+
 out = TEMPLATE
 out = out.replace("/*CATALOG*/", json.dumps(catalog, ensure_ascii=False))
 out = out.replace("/*SERIESDB*/", json.dumps(series_db, ensure_ascii=False))
 out = out.replace("/*STORES*/", json.dumps(STORES, ensure_ascii=False))
+# inline the ebook reader engine (self-contained; no CDN / CSP issues)
+out = out.replace("/*JSZIP*/", _lib("jszip.min.js"))
+out = out.replace("/*EPUBJS*/", _lib("epub.min.js"))
 
 with open(os.path.join(HERE, "index.html"), "w", encoding="utf-8") as f:
     f.write(out)
