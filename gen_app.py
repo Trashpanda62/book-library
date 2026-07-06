@@ -394,11 +394,12 @@ html[data-theme="dark"] .danger{background:var(--card)}
 #reader .rbtn{border:0;background:transparent;font-size:16px;font-weight:700;padding:8px 11px;cursor:pointer;color:var(--ink);border-radius:9px;line-height:1}
 #reader .rbtn:active{background:var(--line)}
 #reader .rview{flex:1;position:relative;overflow:hidden}
-#reader .rnav{position:absolute;top:0;bottom:0;width:26%;z-index:6}
-#reader .rnav.prev{left:0}
-#reader .rnav.next{right:0}
+#reader .rtap{position:absolute;inset:0;z-index:5;-webkit-tap-highlight-color:transparent;touch-action:pan-y}
 #reader .rload{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;z-index:1}
-#reader .rfoot{flex:0 0 auto;text-align:center;font-size:11px;color:var(--muted);padding:5px}
+#reader .rfoot{flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:18px;font-size:12px;color:var(--muted);padding:4px}
+#reader .rfoot button{border:0;background:transparent;color:var(--ink);font-size:22px;line-height:1;padding:6px 18px;cursor:pointer;border-radius:9px}
+#reader .rfoot button:active{background:var(--line)}
+#reader .rfoot #rpct{min-width:44px;text-align:center}
 </style>
 </head>
 <body>
@@ -462,9 +463,9 @@ html[data-theme="dark"] .danger{background:var(--card)}
     <button class="rbtn" onclick="readerFont(10)" aria-label="Larger text">A+</button>
   </div>
   <div class="rview" id="rview"><div class="rload" id="rload">Opening book&#8230;</div>
-    <div class="rnav prev" onclick="readerNav(-1)"></div><div class="rnav next" onclick="readerNav(1)"></div>
+    <div class="rtap" id="rtap"></div>
   </div>
-  <div class="rfoot"><span id="rpct">0%</span></div>
+  <div class="rfoot"><button onclick="readerNav(-1)" aria-label="Previous page">&#8249;</button><span id="rpct">0%</span><button onclick="readerNav(1)" aria-label="Next page">&#8250;</button></div>
 </div>
 <script>/*JSZIP*/</script>
 <script>/*EPUBJS*/</script>
@@ -568,29 +569,20 @@ function openReader(eid,title){
     .then(buf=>{
       _rbook=ePub(buf);
       _rendition=_rbook.renderTo("rview",{width:"100%",height:"100%",flow:"paginated",spread:"none",minSpreadWidth:99999});
+      const dark=localStorage.getItem("lib_theme")==="dark";
+      const ink=dark?"#e7e3d8":"#2b2b28", paper=dark?"#1c1e1b":"#f7f4ec", link=dark?"#d98a5c":"#b8683f";
+      document.getElementById("reader").style.background=paper;
       _rendition.themes.register("clean",{
+        "html,body":{"background":paper+" !important","color":ink+" !important"},
         "body":{"margin":"0","padding":"0 16px","text-align":"left","line-height":"1.5","hyphens":"auto","-webkit-hyphens":"auto"},
-        "p":{"text-align":"left","margin":"0 0 .85em","text-indent":"1.2em","hyphens":"auto","-webkit-hyphens":"auto","widows":"2","orphans":"2"},
-        "div,li,span,td,dd,blockquote":{"text-align":"left"},
-        "h1,h2,h3,h4":{"text-align":"left"},
+        "p":{"color":ink+" !important","text-align":"left","margin":"0 0 .85em","text-indent":"1.2em","hyphens":"auto","-webkit-hyphens":"auto"},
+        "div,li,span,td,dd,blockquote,h1,h2,h3,h4,h5,h6":{"color":ink+" !important","text-align":"left"},
+        "a":{"color":link+" !important"},
         "img":{"max-width":"100%","height":"auto"}
       });
       _rendition.themes.select("clean");
       _rendition.themes.fontSize(fs+"%");
       const pos=localStorage.getItem("lib_pos_"+eid);
-      // Tap-to-turn from INSIDE the chapter iframe (epub.js draws its iframe above the
-      // outer tap-zones, so those never receive touches). Left 30% = prev, right 30% = next.
-      _rendition.hooks.content.register(contents=>{
-        try{
-          const doc=contents.document, win=contents.window;
-          doc.documentElement.style.webkitTouchCallout="none";
-          doc.addEventListener("click",ev=>{
-            const w=win.innerWidth||doc.documentElement.clientWidth||360;
-            const x=ev.clientX;
-            if(x < w*0.30){ readerNav(-1); } else if(x > w*0.70){ readerNav(1); }
-          }, {passive:true});
-        }catch(e){}
-      });
       _rendition.on("rendered",()=>{ rload.style.display="none"; });
       _rendition.on("relocated",loc=>{
         try{ if(loc&&loc.start){ localStorage.setItem("lib_pos_"+eid,loc.start.cfi);
@@ -609,6 +601,20 @@ function openReader(eid,title){
 }
 function openReaderBook(libId){ const b=books.find(x=>x.id==libId); if(!b) return; const eb=ebookFor(b); if(!eb){ toast("No ebook available yet"); return; } openReader(eb.id, b.title); }
 function readerNav(dir){ if(_rendition){ dir<0?_rendition.prev():_rendition.next(); } }
+/* gesture overlay: swipe + tap-zones in the PARENT document (always on top of epub's iframe) */
+(function(){
+  const tap=document.getElementById("rtap"); if(!tap) return;
+  let sx=0,sy=0,st=0;
+  tap.addEventListener("touchstart",e=>{ const t=e.changedTouches[0]; sx=t.clientX; sy=t.clientY; st=Date.now(); },{passive:true});
+  tap.addEventListener("touchend",e=>{
+    const t=e.changedTouches[0], dx=t.clientX-sx, dy=t.clientY-sy, dt=Date.now()-st, w=tap.clientWidth||360;
+    if(Math.abs(dx)>42 && Math.abs(dx)>Math.abs(dy)*1.4){ readerNav(dx<0?1:-1); return; }   // horizontal swipe
+    if(dt<450 && Math.abs(dx)<14 && Math.abs(dy)<14){                                        // tap zones
+      if(t.clientX<w*0.32) readerNav(-1); else if(t.clientX>w*0.68) readerNav(1);
+    }
+  },{passive:true});
+  tap.addEventListener("click",e=>{ const w=tap.clientWidth||360; if(e.clientX<w*0.32)readerNav(-1); else if(e.clientX>w*0.68)readerNav(1); });  // mouse/desktop
+})();
 function readerFont(delta){
   let fs=+(localStorage.getItem("lib_read_fs")||105)+delta; fs=Math.max(75,Math.min(190,fs));
   localStorage.setItem("lib_read_fs",fs); if(_rendition){ try{_rendition.themes.fontSize(fs+"%");}catch(e){} }
