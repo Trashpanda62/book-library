@@ -398,6 +398,21 @@ addEventListener("resize", ()=>{ for(let i=0;i<6;i++) pumpCovers(); });
 
 /* ---------- helpers ---------- */
 const esc = s => (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+// collapse the fine-grained genre into one of 10 fixed shelves (also handles arbitrary imported genres)
+function topGenre(g){
+  const s=(g||"").toLowerCase();
+  if(/child|young adult|juvenile|picture book|\bya\b/.test(s)) return "Children's & YA";
+  if(/histor/.test(s) && /\bfiction\b/.test(s)) return "Historical Fiction";
+  if(/fantasy|science fiction|sci-?fi|dystop/.test(s)) return "Sci-Fi & Fantasy";
+  if(/thriller|mystery|crime|suspense|detective|horror/.test(s)) return "Mystery & Thriller";
+  if(/classic/.test(s)) return "Classics";
+  if(/\bfiction\b|literary|novel|romance|poetry/.test(s)) return "Fiction & Literature";
+  if(/relig|christ|spiritual|theolog|occult|philosoph/.test(s)) return "Religion & Philosophy";
+  if(/health|medic|wellness|self.?help|psycholog|business|diet|fitness/.test(s)) return "Health & Self-Help";
+  if(/politic|histor|memoir|biograph|government|current affairs|strateg|nonfiction/.test(s)) return "History & Politics";
+  if(/cook|homestead|garden|veterin|blacksmith|science|nature|reference|craft|survival|preserv/.test(s)) return "Home & Reference";
+  return "Fiction & Literature";
+}
 function filtered(){
   const q = norm(query);
   let a = books.filter(b=> !q || norm(b.title).includes(q)||norm(b.author).includes(q)||norm(b.series).includes(q)||norm(b.genre).includes(q));
@@ -456,10 +471,10 @@ function renderCovers(m,data){
 
 function renderGroups(m,data,key){
   const groups={};
-  data.forEach(b=>{ const g=(key==="author"?b.author:b.genre)||"—"; (groups[g]=groups[g]||[]).push(b); });
+  data.forEach(b=>{ const g=(key==="author"?(b.author||"—"):topGenre(b.genre)); (groups[g]=groups[g]||[]).push(b); });
   const names=Object.keys(groups).sort((a,b)=>{
     if(key==="author"){ const ln=s=>{const p=s.trim().split(" ");return p[p.length-1];}; return norm(ln(a)).localeCompare(norm(ln(b))); }
-    return a.localeCompare(b);
+    return groups[b].length - groups[a].length || a.localeCompare(b);  // genres: biggest shelves first
   });
   document.getElementById("viewnote").textContent = names.length+" "+(key==="author"?"authors":"genres");
   m.innerHTML = names.map(n=>`
