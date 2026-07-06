@@ -158,6 +158,7 @@ main{padding:12px 12px 40px;max-width:820px;margin:0 auto}
 .dmeta .drow{font-size:12.5px;color:var(--muted);margin-top:6px}
 .dmeta .pill{display:inline-block;background:#efe7d6;color:var(--muted);font-size:11px;font-weight:600;
   padding:3px 9px;border-radius:20px;margin:6px 6px 0 0}
+.dmeta .pill.coll{background:var(--sage);color:#fff}
 .dnotes{padding:8px 16px 0;font-size:12.5px;color:var(--muted);font-style:italic}
 .sect{padding:14px 16px 0}
 .sect h4{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--sage-dark)}
@@ -273,6 +274,8 @@ html[data-theme="dark"] .danger{background:var(--card)}
       <option value="none">All books</option>
       <option value="author">By author</option>
       <option value="genre">By genre</option>
+      <option value="collection">By collection</option>
+      <option value="shelf">By shelf</option>
     </select>
     <select id="sort" class="lbsel" aria-label="Sort">
       <option value="author">Author A–Z</option>
@@ -498,8 +501,7 @@ function render(){
   // library
   const data = filtered();
   if(!data.length){ m.innerHTML = `<div class="empty">No books ${statusFilter?"on this shelf":"match"}${query?` “${esc(query)}”`:""}.</div>`; return; }
-  if(groupBy==="author") renderGroups(m,data,"author");
-  else if(groupBy==="genre") renderGroups(m,data,"genre");
+  if(groupBy!=="none") renderGroups(m,data,groupBy);
   else if(layout==="list") renderList(m,data);
   else renderCovers(m,data);
   wireCovers(m);
@@ -560,12 +562,16 @@ function renderCovers(m,data){
 
 function renderGroups(m,data,key){
   const groups={};
-  data.forEach(b=>{ const g=(key==="author"?(b.author||"—"):topGenre(b.genre)); (groups[g]=groups[g]||[]).push(b); });
+  data.forEach(b=>{
+    if(key==="collection"){ const cs=(b.collections&&b.collections.length)?b.collections:["Unfiled"]; cs.forEach(c=>{(groups[c]=groups[c]||[]).push(b);}); }
+    else { const g = key==="author"?(b.author||"—") : key==="shelf"?(b.shelf||"Unshelved") : topGenre(b.genre); (groups[g]=groups[g]||[]).push(b); }
+  });
   const names=Object.keys(groups).sort((a,b)=>{
     if(key==="author"){ const ln=s=>{const p=s.trim().split(" ");return p[p.length-1];}; return norm(ln(a)).localeCompare(norm(ln(b))); }
-    return groups[b].length - groups[a].length || a.localeCompare(b);  // genres: biggest shelves first
+    return groups[b].length - groups[a].length || a.localeCompare(b);  // biggest shelves first
   });
-  document.getElementById("viewnote").textContent = names.length+" "+(key==="author"?"authors":"genres");
+  const label={author:"authors",genre:"genres",collection:"collections",shelf:"shelves"}[key]||"groups";
+  document.getElementById("viewnote").textContent = names.length+" "+label;
   m.innerHTML = names.map(n=>`
     <div class="group">
       <div class="ghead" onclick="this.parentNode.classList.toggle('open')">
@@ -710,11 +716,11 @@ function openBook(id){
       <div class="dmeta">
         <h2>${esc(b.title)}</h2>
         <div class="dau">${esc(b.author)}</div>
-        <div>${b.genre?`<span class="pill">${esc(b.genre)}</span>`:""}${b.year?`<span class="pill">${esc(b.year)}</span>`:""}${b.shelf?`<span class="pill">${esc(b.shelf)}</span>`:""}</div>
+        <div>${b.genre?`<span class="pill">${esc(b.genre)}</span>`:""}${b.year?`<span class="pill">${esc(b.year)}</span>`:""}${b.shelf?`<span class="pill">${esc(b.shelf)}</span>`:""}${(b.collections||[]).map(c=>`<span class="pill coll">${esc(c)}</span>`).join("")}</div>
       </div>
     </div>
     ${b.notes?`<div class="dnotes">${esc(b.notes)}</div>`:""}
-    <div class="sect"><h4>Reading status</h4>${statusSeg}<div style="margin-top:12px">${stars}</div></div>
+    <div class="sect"><h4>Reading status${b.finished?` · finished ${esc(b.finished)}`:""}</h4>${statusSeg}<div style="margin-top:12px">${stars}</div></div>
     ${seriesBlock}
     <div class="sect"><h4>Local to Livingston, TN</h4><div class="btns">${bl.local}</div></div>
     <div class="sect"><h4>Buy online</h4><div class="btns">${bl.online}</div></div>`;
@@ -758,7 +764,9 @@ function openWish(key){
 }
 
 /* ---------- reading status / rating / edit / add / delete ---------- */
-function setStatus(id,val){ const b=books.find(x=>x.id==id); if(!b) return; b.status=(b.status===val?"":val); if(!b.added)b.added=Date.now(); persist(); render(); openBook(id); }
+const todayISO = () => new Date().toISOString().slice(0,10);
+function setStatus(id,val){ const b=books.find(x=>x.id==id); if(!b) return; b.status=(b.status===val?"":val); if(!b.added)b.added=Date.now();
+  if(b.status==="read" && !b.finished) b.finished=todayISO(); persist(); render(); openBook(id); }
 function setRating(id,n){ const b=books.find(x=>x.id==id); if(!b) return; b.rating=(b.rating===n?0:n); persist(); render(); openBook(id); }
 function openEdit(id){
   const b=books.find(x=>x.id==id); if(!b) return;
@@ -769,7 +777,8 @@ function openEdit(id){
     <div class="efield"><label>Genre</label><input id="e_genre" value="${esc(b.genre)}"></div>
     <div class="efield"><label>Year</label><input id="e_year" value="${esc(b.year)}"></div>
     <div class="efield"><label>Series (optional)</label><input id="e_series" value="${esc(b.series||"")}"></div>
-    <div class="efield"><label>Shelf / location</label><input id="e_shelf" value="${esc(b.shelf||"")}"></div>
+    <div class="efield"><label>Shelf / location (e.g. Bookcase 1, cube B3)</label><input id="e_shelf" value="${esc(b.shelf||"")}"></div>
+    <div class="efield"><label>Collections (comma-separated — e.g. Dani, Kids, Book club)</label><input id="e_collections" value="${esc((b.collections||[]).join(", "))}" placeholder="Dani, Kids"></div>
     <div class="efield"><label>Cover image URL (paste to override)</label><input id="e_cover" value="${esc(b.cover||"")}" placeholder="https://..."></div>
     <div class="efield"><label>Notes</label><textarea id="e_notes">${esc(b.notes||"")}</textarea></div>
     <button class="imp" onclick="saveEdit(${id})">Save changes</button>
@@ -782,6 +791,7 @@ function saveEdit(id){
   const g=v=>document.getElementById(v).value.trim();
   b.title=g("e_title")||b.title; b.author=g("e_author"); b.genre=g("e_genre")||"Uncategorized";
   b.year=g("e_year"); b.series=g("e_series"); b.shelf=g("e_shelf"); b.notes=g("e_notes");
+  b.collections=g("e_collections").split(",").map(x=>x.trim()).filter(Boolean);
   const cov=g("e_cover"); if(cov!==(b.cover||"")){ b.cover=cov; delete coverCache[ckey(b)]; }
   b.placeholder=false; persist(); closeSheet(); render(); toast("Saved");
 }
@@ -886,6 +896,27 @@ function exportCSV(){
   download("our-library-"+stamp()+".csv", rows.join("\n"), "text/csv"); toast("CSV exported");
 }
 
+/* ---------- reading goal + duplicates ---------- */
+function saveGoal(){ const v=(document.getElementById("goal_in").value||"").replace(/[^0-9]/g,""); if(v) localStorage.setItem("lib_goal",v); else localStorage.removeItem("lib_goal"); toast(v?("Goal set: "+v+" books"):"Goal cleared"); }
+function dupeGroups(){
+  const map={};
+  books.forEach(b=>{ if(b.placeholder) return; const k=norm(b.title)+"|"+norm(b.author); (map[k]=map[k]||[]).push(b); });
+  return Object.values(map).filter(g=>g.length>1);
+}
+function openDupes(){
+  const groups=dupeGroups();
+  const body= groups.length ? groups.map(g=>`<div class="statsect" style="padding:11px 13px">
+      <div style="font-weight:700;font-size:13.5px">${esc(g[0].title)}</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:6px">${esc(g[0].author)} · ${g.length} copies</div>
+      ${g.map((b,i)=>`<div class="row" style="padding:6px 0;border-top:1px solid var(--line)"><div class="rmain"><div class="rt" style="font-size:12.5px">${esc(b.shelf||"—")}${b.year?" · "+esc(b.year):""}</div></div>${i===0?'<span class="curtag">keep</span>':`<button class="imp sec danger" style="width:auto;margin:0;padding:6px 12px" onclick="removeDupe(${b.id})">Remove</button>`}</div>`).join("")}
+    </div>`).join("")
+    : `<div class="empty">No duplicates found. 🎉</div>`;
+  document.getElementById("sheetbody").innerHTML=`<div class="panel"><h3>Duplicate books</h3>
+    <p style="font-size:12.5px;color:var(--muted);margin:4px 0 10px">Books with the same title + author. The first copy is kept; remove the extras.</p>${body}</div>`;
+  openSheet();
+}
+function removeDupe(id){ books=books.filter(x=>x.id!=id); persist(); render(); openDupes(); toast("Removed duplicate"); }
+
 /* ---------- stats ---------- */
 function renderStats(m){
   document.getElementById("viewnote").textContent="";
@@ -904,7 +935,13 @@ function renderStats(m){
   const amax=Math.max(1,...atop.map(x=>x[1]));
   const seriesNames=[...new Set(books.filter(b=>b.series).map(b=>b.series))];
   let sOwned=0,sTotal=0; seriesNames.forEach(n=>{ const s=seriesMatch(n); if(s.db&&!s.placeholder){ sOwned+=s.haveCount; sTotal+=s.total; } });
-  const bar=(label,val,max)=>`<div class="brow"><span class="bl">${esc(label)}</span><span class="bt"><i style="width:${Math.round(100*val/max)}%"></i></span><span class="bn">${val}</span></div>`;
+  const bar=(label,val,max)=>`<div class="brow"><span class="bl">${esc(label)}</span><span class="bt"><i style="width:${Math.round(100*val/Math.max(1,max))}%"></i></span><span class="bn">${val}</span></div>`;
+  const yr=new Date().getFullYear();
+  const goal=parseInt(localStorage.getItem("lib_goal")||"0")||0;
+  const finishedYr=books.filter(b=>b.finished&&b.finished.slice(0,4)==String(yr)).length;
+  const ccount={}; books.forEach(b=>(b.collections||[]).forEach(c=>ccount[c]=(ccount[c]||0)+1));
+  const ctop=Object.entries(ccount).sort((a,b)=>b[1]-a[1]);
+  const cmax=Math.max(1,...ctop.map(x=>x[1]));
   m.innerHTML=`
     <div class="stat-grid">
       <div class="statcard"><div class="num">${owned}</div><div class="lab">books in library</div></div>
@@ -914,8 +951,10 @@ function renderStats(m){
       <div class="statcard"><div class="num">${avg}</div><div class="lab">avg rating (${rated.length} rated)</div></div>
       <div class="statcard"><div class="num">${years.length?Math.min(...years)+"–"+Math.max(...years):"—"}</div><div class="lab">year range</div></div>
     </div>
+    ${goal?`<div class="statsect"><h4>${yr} reading goal</h4>${bar(finishedYr+" of "+goal+" books read", finishedYr, goal)}<div style="font-size:12px;color:var(--muted);margin-top:2px">${finishedYr>=goal?"Goal reached! 🎉":(goal-finishedYr)+" to go"}</div></div>`:`<div class="statsect"><h4>${yr} reading goal</h4><div style="font-size:12.5px;color:var(--muted)">Set a yearly goal in ⚙ Settings to track it here.</div></div>`}
     ${sTotal?`<div class="statsect"><h4>Series completion</h4>${bar(sOwned+" of "+sTotal+" across "+seriesNames.length+" series", sOwned, sTotal)}</div>`:""}
     <div class="statsect"><h4>By genre</h4>${gtop.map(([g,n])=>bar(g,n,gmax)).join("")}</div>
+    ${ctop.length?`<div class="statsect"><h4>Collections</h4>${ctop.map(([c,n])=>bar(c,n,cmax)).join("")}</div>`:""}
     <div class="statsect"><h4>Top authors</h4>${atop.map(([a,n])=>bar(a,n,amax)).join("")}</div>`;
 }
 function openAddWish(){
@@ -951,6 +990,12 @@ function openSettings(){
       <button class="imp sec" onclick="openAddBook()">Add a book by title</button>
       <label class="imp sec" for="csv">Import from Libib (CSV)</label>
       <input id="csv" type="file" accept=".csv,text/csv" style="display:none">
+    </div>
+
+    <div class="setgrp"><div class="setlab">Reading & cleanup</div>
+      <div class="efield"><label>${new Date().getFullYear()} reading goal (books)</label><input id="goal_in" inputmode="numeric" value="${esc(localStorage.getItem("lib_goal")||"")}" placeholder="e.g. 24"></div>
+      <button class="imp sec" onclick="saveGoal()">Save goal</button>
+      <button class="imp sec" onclick="openDupes()">Find duplicate books</button>
     </div>
 
     <div class="setgrp"><div class="setlab">Backup & data</div>
