@@ -35,7 +35,7 @@ header{position:sticky;top:0;z-index:50;background:var(--sage);color:#fff;
   font-size:15px;background:rgba(255,255,255,.95);color:var(--ink)}
 .searchwrap svg{position:absolute;left:11px;top:9px;width:16px;height:16px;opacity:.5}
 .tabs{display:flex;gap:4px;margin-top:9px;background:rgba(255,255,255,.12);padding:3px;border-radius:12px}
-.tabs button{flex:1;padding:7px 4px;border-radius:9px;font-size:12.5px;font-weight:600;color:#fff;opacity:.8}
+.tabs button{flex:1;padding:7px 2px;border-radius:9px;font-size:11.5px;font-weight:600;color:#fff;opacity:.8;white-space:nowrap}
 .tabs button.on{background:var(--card);color:var(--sage-dark);opacity:1;box-shadow:var(--shadow)}
 .sortbar{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12.5px;color:rgba(255,255,255,.9)}
 .sortbar select{background:rgba(255,255,255,.95);color:var(--ink);border:none;border-radius:8px;
@@ -82,6 +82,11 @@ main{padding:12px 12px 40px;max-width:820px;margin:0 auto}
   overflow:hidden;line-height:1.1}
 .row .rt{font-size:13.5px;font-weight:600;line-height:1.25}
 .row .rs{font-size:11.5px;color:var(--muted);margin-top:2px}
+.row.lg .mini{width:42px;height:63px;border-radius:5px}
+.row .rmain{min-width:0}
+.row .rmain .rt{overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.row .rmain .rs{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.lser{color:var(--sage);font-weight:600}
 
 /* series view */
 .scard{background:var(--card);border-radius:14px;border:1px solid var(--line);box-shadow:var(--shadow);
@@ -171,6 +176,7 @@ main{padding:12px 12px 40px;max-width:820px;margin:0 auto}
   </div>
   <div class="tabs" id="tabs">
     <button data-v="covers" class="on">Covers</button>
+    <button data-v="list">List</button>
     <button data-v="series">Series</button>
     <button data-v="authors">Authors</button>
     <button data-v="genres">Genres</button>
@@ -294,9 +300,22 @@ function render(){
   const data = filtered();
   if(!data.length){ m.innerHTML = `<div class="empty">No books match “${esc(query)}”.</div>`; return; }
   if(view==="covers") renderCovers(m,data);
+  else if(view==="list") renderList(m,data);
   else if(view==="series") renderSeries(m);
   else renderGroups(m,data, view==="authors"?"author":"genre");
   wireCovers(m);
+}
+
+function renderList(m,data){
+  document.getElementById("viewnote").textContent = data.length+" shown";
+  m.innerHTML = `<div class="group open"><div class="glist">`+data.map(b=>{
+    let sTag = "";
+    if(b.series){ const s=seriesMatch(b.series); sTag = s.placeholder?` · <span class="lser">${esc(b.series)}</span>`:` · <span class="lser">${esc(b.series)} (${s.haveCount}/${s.total})</span>`; }
+    return `<div class="row lg" onclick="openBook(${b.id})">
+      <div class="mini" data-id="${b.id}"><div class="mph">${esc(b.title)}</div></div>
+      <div class="rmain"><div class="rt">${esc(b.title)}</div><div class="rs">${esc(b.author)}${b.year?" · "+b.year:""}${sTag}</div></div>
+    </div>`;
+  }).join("")+`</div></div>`;
 }
 
 function renderCovers(m,data){
