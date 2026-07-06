@@ -608,12 +608,12 @@ function readerNav(dir){ if(_rendition){ dir<0?_rendition.prev():_rendition.next
   tap.addEventListener("touchstart",e=>{ const t=e.changedTouches[0]; sx=t.clientX; sy=t.clientY; st=Date.now(); },{passive:true});
   tap.addEventListener("touchend",e=>{
     const t=e.changedTouches[0], dx=t.clientX-sx, dy=t.clientY-sy, dt=Date.now()-st, w=tap.clientWidth||360;
-    if(Math.abs(dx)>42 && Math.abs(dx)>Math.abs(dy)*1.4){ readerNav(dx<0?1:-1); return; }   // horizontal swipe
-    if(dt<450 && Math.abs(dx)<14 && Math.abs(dy)<14){                                        // tap zones
-      if(t.clientX<w*0.32) readerNav(-1); else if(t.clientX>w*0.68) readerNav(1);
-    }
+    // swipe: right-to-left (dx<0) = forward, left-to-right (dx>0) = back
+    if(Math.abs(dx)>42 && Math.abs(dx)>Math.abs(dy)*1.4){ readerNav(dx<0?1:-1); return; }
+    // tap: far-left strip = back, the rest of the screen = next
+    if(dt<450 && Math.abs(dx)<14 && Math.abs(dy)<14){ readerNav(t.clientX < w*0.22 ? -1 : 1); }
   },{passive:true});
-  tap.addEventListener("click",e=>{ const w=tap.clientWidth||360; if(e.clientX<w*0.32)readerNav(-1); else if(e.clientX>w*0.68)readerNav(1); });  // mouse/desktop
+  tap.addEventListener("click",e=>{ const w=tap.clientWidth||360; readerNav(e.clientX < w*0.22 ? -1 : 1); });  // mouse/desktop
 })();
 function readerFont(delta){
   let fs=+(localStorage.getItem("lib_read_fs")||105)+delta; fs=Math.max(75,Math.min(190,fs));
