@@ -526,24 +526,29 @@ async function pullSync(silent){
 }
 
 /* ---------- in-app ebook reader (epub.js over the sync host's /ebook proxy) ---------- */
-let EBOOKS={}, _rendition=null, _rbook=null;
+let EBOOKS=[], _rendition=null, _rbook=null;
 const normT = s => (s||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+const surnameOf = a => { const p=normT(a).split(" ").filter(Boolean); return p.length?p[p.length-1]:""; };
 async function pullEbooks(){
   const url=syncURL(); if(!url) return;
   try{
     const r=await fetch(url+"/ebooks",{cache:"no-store"}); if(!r.ok) return;
-    const list=await r.json(); const m={};
-    (list||[]).forEach(e=>{ if(e&&e.title) m[normT(e.title)]=e; });
-    EBOOKS=m; render();
+    const list=await r.json();
+    EBOOKS=(list||[]).filter(e=>e&&e.title);
+    render();
   }catch(e){}
 }
 function ebookFor(b){
-  if(!b || !EBOOKS) return null;
-  const t=normT(b.title); if(t.length<3) return null;
-  if(EBOOKS[t]) return EBOOKS[t];
-  for(const k in EBOOKS){                       // subtitle-tolerant (CWA titles often carry a subtitle)
-    if(k===t) return EBOOKS[k];
-    if((k.startsWith(t)||t.startsWith(k)) && Math.min(k.length,t.length)>=6) return EBOOKS[k];
+  if(!b || !EBOOKS.length) return null;
+  const t=normT(b.title); if(t.length<2) return null;
+  const bsur=surnameOf(b.author);
+  for(const e of EBOOKS){
+    const et=normT(e.title);
+    // word-boundary prefix either direction: handles subtitles + short titles (Grit), rejects "Jane & Edward…"
+    const titleOk = et===t || et.startsWith(t+" ") || t.startsWith(et+" ");
+    if(!titleOk) continue;
+    const esur=surnameOf(e.author);
+    if(!bsur || !esur || bsur===esur) return e;   // author agrees (or unknown) => confident match
   }
   return null;
 }
