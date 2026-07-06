@@ -517,8 +517,8 @@ function renderWishlist(m){
     <button class="imp" style="margin:0;flex:1" onclick="openAddWish()">＋ Add a book</button>
     <button class="imp sec" style="margin:0;flex:none;padding:13px 16px" onclick="shareWishlist()">🔗 Share</button></div>`;
   if(!wishlist.length){
-    m.innerHTML = addBar + `<div class="empty">Your wishlist is empty.<br><span style="font-size:12.5px">Open the <b>Series</b> tab and tap any book you're missing or an upcoming release to add it here — or use the button above.</span></div>`;
-    return;
+    m.innerHTML = addBar + `<div id="suggestbox"></div>` + `<div class="empty">Your wishlist is empty.<br><span style="font-size:12.5px">Open the <b>Series</b> tab and tap any book you're missing or an upcoming release to add it here — or use the button above.</span></div>`;
+    loadSuggestions(); return;
   }
   const rows = items.map(w=>{
     const up = w.status==="upcoming";
@@ -530,8 +530,59 @@ function renderWishlist(m){
       <button class="wremove" onclick="event.stopPropagation();removeWish('${esc(w.key)}');render();" aria-label="Remove">♥</button>
     </div>`;
   }).join("");
-  m.innerHTML = addBar + `<div class="group open"><div class="glist">${rows}</div></div>`;
+  m.innerHTML = addBar + `<div class="group open"><div class="glist">${rows}</div></div>` + `<div id="suggestbox"></div>`;
+  loadSuggestions();
 }
+
+/* ---------- suggestions: more from your authors (Open Library) ---------- */
+let _suggestHTML=null, _suggList=[];
+async function olAuthorWorks(author){
+  const key="olw:"+norm(author);
+  try{ const c=JSON.parse(localStorage.getItem(key)||"null"); if(c && (Date.now()-c.t < 7*864e5)) return c.w; }catch(e){}
+  let w=[];
+  try{
+    const r=await fetch("https://openlibrary.org/search.json?limit=14&sort=new&fields=title,first_publish_year,cover_i&author="+enc(author));
+    const j=await r.json();
+    w=(j.docs||[]).filter(d=>d.cover_i && d.title).map(d=>({title:d.title, year:d.first_publish_year||"", cover:"https://covers.openlibrary.org/b/id/"+d.cover_i+"-M.jpg"}));
+  }catch(e){}
+  try{ localStorage.setItem(key, JSON.stringify({t:Date.now(), w})); }catch(e){}
+  return w;
+}
+const baseNorm = t => norm((t||"").split(":")[0].split("(")[0]);
+const isJunkTitle = t => /box set|boxed|collection|\b\d+\s*books?\b|bestsell|omnibus|complete series/i.test(t||"");
+async function loadSuggestions(){
+  const box=document.getElementById("suggestbox"); if(!box) return;
+  if(_suggestHTML!==null){ box.innerHTML=_suggestHTML; wireSuggest(box); return; }
+  const ac={}; books.forEach(b=>{ if(b.author&&!b.placeholder&&b.author!=="Unknown") ac[b.author]=(ac[b.author]||0)+1; });
+  const top=Object.entries(ac).filter(([a,n])=>n>=2).sort((a,b)=>b[1]-a[1]).slice(0,6).map(x=>x[0]);
+  if(!top.length){ _suggestHTML=""; return; }
+  const owned=new Set(books.map(b=>baseNorm(b.title)));
+  const wished=new Set(wishlist.map(w=>baseNorm(w.title)));
+  const fetched=await Promise.all(top.map(a=>olAuthorWorks(a).then(w=>[a,w])));   // parallel
+  const sugg=[]; const seen=new Set();
+  for(const [author,works] of fetched){
+    let per=0;
+    for(const w of works){
+      const t=baseNorm(w.title);
+      if(!t||owned.has(t)||wished.has(t)||seen.has(t)||isJunkTitle(w.title)) continue;
+      seen.add(t); sugg.push({title:w.title, author, year:w.year, cover:w.cover}); per++;
+      if(per>=2) break;
+    }
+    if(sugg.length>=10) break;
+  }
+  if(!sugg.length){ _suggestHTML=""; return; }
+  _suggList=sugg;
+  _suggestHTML=`<div class="scard"><h3>✨ More from your authors</h3>
+    <div class="sauth">Books by authors you own — tap to add to the wishlist</div>
+    <div class="group open" style="margin-top:8px"><div class="glist">`
+    + sugg.map((s,i)=>`<div class="row lg" data-sugg="${i}" style="cursor:pointer">
+        <div class="mini"><img src="${esc(s.cover)}" loading="lazy" onerror="this.style.display='none'"></div>
+        <div class="rmain"><div class="rt">${esc(s.title)}</div><div class="rs">${esc(s.author)}${s.year?" · "+s.year:""}</div></div>
+        <span class="wish">＋</span></div>`).join("")
+    + `</div></div></div>`;
+  box.innerHTML=_suggestHTML; wireSuggest(box);
+}
+function wireSuggest(box){ box.querySelectorAll("[data-sugg]").forEach(el=>{ el.addEventListener("click",()=>{ const s=_suggList[+el.dataset.sugg]; if(s){ addWish({title:s.title,author:s.author,year:s.year,cover:s.cover}); _suggestHTML=null; render(); toast("Added to wishlist ♥"); } }); }); }
 
 function renderList(m,data){
   document.getElementById("viewnote").textContent = data.length+" shown";
@@ -655,13 +706,33 @@ function comingSoonHTML(allNames){
     <div class="sauth">Unreleased books in your series — tap to add to the wishlist</div>
     <div class="entries" style="margin-top:10px">${rows}</div></div>`;
 }
+function readNextHTML(allNames){
+  // for series you're partway through, the next book you don't own yet
+  const recs=[];
+  allNames.forEach(n=>{ const s=seriesMatch(n);
+    if(!s.db || s.placeholder || s.haveCount<1 || s.haveCount>=s.total) return;
+    const miss=(s.published||[]).find(e=>!e.have);
+    if(miss) recs.push({series:n, author:s.db.author, ...miss, have:s.haveCount, total:s.total});
+  });
+  if(!recs.length) return "";
+  const rows=recs.map(e=>{
+    const wished=isWished(e.title, e.author);
+    return `<div class="ent" data-wishadd data-series="${esc(e.series)}" data-title="${esc(e.title)}" style="cursor:pointer">
+      <div class="num">${esc(e.index||"•")}</div>
+      <div><div class="et">${esc(e.title)}</div><div class="ey">${esc(e.series)} · you have ${e.have} of ${e.total}</div></div>
+      <span class="wish ${wished?'on':''}">${wished?'♥':'♡'}</span></div>`;
+  }).join("");
+  return `<div class="scard"><h3>📖 Read Next</h3>
+    <div class="sauth">The next book in series you've started — tap to add to the wishlist</div>
+    <div class="entries" style="margin-top:10px">${rows}</div></div>`;
+}
 function renderSeries(m){
   const q=norm(query);
   let names=[...new Set(books.filter(b=>b.series).map(b=>b.series))];
   names=names.filter(n=>!q||norm(n).includes(q)||books.some(b=>b.series===n&&(norm(b.title).includes(q)||norm(b.author).includes(q))));
   names.sort();
   if(!names.length){ m.innerHTML=`<div class="empty">No series found.</div>`; return; }
-  const coming = q ? "" : comingSoonHTML(names);
+  const coming = q ? "" : comingSoonHTML(names) + readNextHTML(names);
   m.innerHTML = coming + names.map(n=>{
     const s=seriesMatch(n);
     const auth=s.db?s.db.author:(s.owned[0]?s.owned[0].author:"");
