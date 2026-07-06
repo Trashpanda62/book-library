@@ -754,12 +754,18 @@ function renderSeries(m){
 /* ---------- detail sheet ---------- */
 function buyLinks(b){
   const q = b.isbn ? b.isbn : (b.title.replace(/\s*\(multiple\).*/i,"")+" "+b.author);
-  const online = STORES.online.map(s=>`<a class="buy" href="${s.search}${enc(q)}" target="_blank" rel="noopener"><span class="bn">${esc(s.name)}</span><span class="bk">search &rsaquo;</span></a>`).join("");
-  const local = STORES.local.map(s=>{
+  const priceHref = b.isbn ? ("https://bookscouter.com/book/"+enc(b.isbn)) : ("https://www.google.com/search?tbm=shop&q="+enc(q));
+  const online = STORES.online.map(s=>`<a class="buy" href="${s.search}${enc(q)}" target="_blank" rel="noopener"><span class="bn">${esc(s.name)}</span><span class="bk">search &rsaquo;</span></a>`).join("")
+    + `<a class="buy" href="${priceHref}" target="_blank" rel="noopener"><span class="bn">Compare prices 💲</span><span class="bk">${b.isbn?"used & new by ISBN":"shopping search"}</span></a>`;
+  const stores = STORES.local.filter(s=>!/library|borrow/i.test(s.kind));
+  const local = stores.map(s=>{
     const href = s.search? s.search+enc(q) : s.url;
     return `<a class="buy local" href="${href}" target="_blank" rel="noopener"><span class="bn">${esc(s.name)}</span><span class="bk">${esc(s.kind)} · ${esc(s.city)}</span></a>`;
   }).join("");
-  return {online, local};
+  const lib = STORES.local.find(s=>/library|borrow/i.test(s.kind));
+  const borrow = `<a class="buy local" href="https://search.worldcat.org/search?q=${enc(q)}" target="_blank" rel="noopener"><span class="bn">Find at a library 🔎</span><span class="bk">WorldCat · nearby holdings</span></a>`
+    + (lib?`<a class="buy local" href="${lib.url}" target="_blank" rel="noopener"><span class="bn">${esc(lib.name)}</span><span class="bk">Borrow · ${esc(lib.city)}</span></a>`:"");
+  return {online, local, borrow};
 }
 function openBook(id){
   const b=books.find(x=>x.id==id); if(!b) return;
@@ -796,6 +802,7 @@ function openBook(id){
     ${b.notes?`<div class="dnotes">${esc(b.notes)}</div>`:""}
     <div class="sect"><h4>Reading status${b.finished?` · finished ${esc(b.finished)}`:""}</h4>${statusSeg}<div style="margin-top:12px">${stars}</div></div>
     ${seriesBlock}
+    <div class="sect"><h4>Borrow — free</h4><div class="btns">${bl.borrow}</div></div>
     <div class="sect"><h4>Local to Livingston, TN</h4><div class="btns">${bl.local}</div></div>
     <div class="sect"><h4>Buy online</h4><div class="btns">${bl.online}</div></div>`;
   // detail cover
@@ -825,6 +832,7 @@ function openWish(key){
         ${owned?`<div class="subnote" style="color:var(--sage)">✓ This is already in your library.</div>`:""}
       </div>
     </div>
+    <div class="sect"><h4>Borrow — free</h4><div class="btns">${bl.borrow}</div></div>
     <div class="sect"><h4>Local to Livingston, TN</h4><div class="btns">${bl.local}</div></div>
     <div class="sect"><h4>Buy online</h4><div class="btns">${bl.online}</div></div>
     <div class="sect">
@@ -1225,6 +1233,7 @@ function openBuySheet(key){
     <div class="dtop"><div class="dcover" data-id="${esc(w.id)}" id="dcover"><div class="ph mph" style="font-size:11px;padding:8px;text-align:center">${esc(w.title)}</div></div>
       <div class="dmeta"><h2>${esc(w.title)}</h2><div class="dau">${esc(w.author)}</div>
       <div>${w.series?`<span class="pill">${esc(w.series)}</span>`:""}${w.status==="upcoming"?`<span class="pill" style="background:var(--up);color:#fff">Releases ${esc(w.release_date||"TBA")}</span>`:""}</div></div></div>
+    <div class="sect"><h4>Borrow — free</h4><div class="btns">${bl.borrow}</div></div>
     <div class="sect"><h4>Local to Livingston, TN</h4><div class="btns">${bl.local}</div></div>
     <div class="sect"><h4>Buy online</h4><div class="btns">${bl.online}</div></div>`;
   const dc=document.getElementById("dcover"); resolveCover(w).then(u=>{ if(u){ const i=new Image(); i.onload=()=>{dc.querySelector(".mph").style.display="none";dc.insertBefore(i,dc.firstChild);}; i.src=u; } });
