@@ -277,10 +277,7 @@ html[data-theme="dark"] .danger{background:var(--card)}
 #reader .rview{flex:1;position:relative;overflow:hidden}
 #reader .rtap{position:absolute;inset:0;z-index:5;-webkit-tap-highlight-color:transparent;touch-action:pan-y}
 #reader .rload{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;z-index:1}
-#reader .rfoot{flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:18px;font-size:12px;color:var(--muted);padding:4px}
-#reader .rfoot button{border:0;background:transparent;color:var(--ink);font-size:22px;line-height:1;padding:6px 18px;cursor:pointer;border-radius:9px}
-#reader .rfoot button:active{background:var(--line)}
-#reader .rfoot #rpct{min-width:44px;text-align:center}
+#reader .rfoot{flex:0 0 auto;text-align:center;font-size:12px;color:var(--muted);padding:6px;min-height:12px}
 </style>
 </head>
 <body>
@@ -346,7 +343,7 @@ html[data-theme="dark"] .danger{background:var(--card)}
   <div class="rview" id="rview"><div class="rload" id="rload">Opening book&#8230;</div>
     <div class="rtap" id="rtap"></div>
   </div>
-  <div class="rfoot"><button onclick="readerNav(-1)" aria-label="Previous page">&#8249;</button><span id="rpct">0%</span><button onclick="readerNav(1)" aria-label="Next page">&#8250;</button></div>
+  <div class="rfoot"><span id="rpage"></span></div>
 </div>
 <script>/*!
 
@@ -478,22 +475,40 @@ function openReader(eid,title){
       const pos=localStorage.getItem("lib_pos_"+eid);
       _rendition.on("rendered",()=>{ rload.style.display="none"; });
       _rendition.on("relocated",loc=>{
-        try{ if(loc&&loc.start){ localStorage.setItem("lib_pos_"+eid,loc.start.cfi);
-          let p=loc.start.percentage;
-          if((p==null||isNaN(p)) && _rbook.locations && _rbook.locations.length()){ try{ p=_rbook.locations.percentageFromCfi(loc.start.cfi); }catch(e){} }
-          if(p!=null && !isNaN(p)) document.getElementById("rpct").textContent=Math.round(p*100)+"%"; } }catch(e){}
+        try{ if(loc&&loc.start){ localStorage.setItem("lib_pos_"+eid,loc.start.cfi); updateReaderPage(loc); } }catch(e){}
       });
       return _rendition.display(pos||undefined);
     })
     .then(()=>{
       rload.style.display="none";
-      // build locations for the progress % (async; harmless if it fails)
-      try{ _rbook.locations.generate(1400).then(()=>{ if(_rendition&&_rendition.currentLocation){ try{ const cl=_rendition.currentLocation(); if(cl&&cl.start){ const p=_rbook.locations.percentageFromCfi(cl.start.cfi); if(p!=null&&!isNaN(p)) document.getElementById("rpct").textContent=Math.round(p*100)+"%"; } }catch(e){} } }); }catch(e){}
+      // build locations for the page count + % (async; harmless if it fails)
+      try{ _rbook.locations.generate(1400).then(()=>{ try{ if(_rendition&&_rendition.currentLocation){ updateReaderPage(_rendition.currentLocation()); } }catch(e){} }); }catch(e){}
     })
     .catch(e=>{ rload.textContent="Couldn't load this book ("+(e&&e.message||e)+")"; });
 }
 function openReaderBook(libId){ const b=books.find(x=>x.id==libId); if(!b) return; const eb=ebookFor(b); if(!eb){ toast("No ebook available yet"); return; } openReader(eb.id, b.title); }
-function readerNav(dir){ if(_rendition){ dir<0?_rendition.prev():_rendition.next(); } }
+let _navAt=0;
+function readerNav(dir){
+  const now=Date.now(); if(now-_navAt<420) return;   // tiny delay: collapses touch+click double-fire and rate-limits
+  _navAt=now;
+  if(_rendition){ dir<0?_rendition.prev():_rendition.next(); }
+}
+function updateReaderPage(loc){
+  try{
+    if(!loc||!loc.start) return;
+    const el=document.getElementById("rpage"); if(!el) return;
+    let txt="";
+    if(_rbook && _rbook.locations && _rbook.locations.length()){
+      let cur=loc.start.location; if(cur==null) cur=_rbook.locations.locationFromCfi(loc.start.cfi);
+      const tot=_rbook.locations.total;
+      let p=loc.start.percentage; if(p==null||isNaN(p)){ try{p=_rbook.locations.percentageFromCfi(loc.start.cfi);}catch(e){} }
+      txt="page "+((cur|0)+1)+" of "+tot+(p!=null&&!isNaN(p)?"   ·   "+Math.round(p*100)+"%":"");
+    } else if(loc.start.displayed && loc.start.displayed.total){
+      txt="page "+loc.start.displayed.page+" of "+loc.start.displayed.total;
+    }
+    el.textContent=txt;
+  }catch(e){}
+}
 /* gesture overlay: swipe + tap-zones in the PARENT document (always on top of epub's iframe) */
 (function(){
   const tap=document.getElementById("rtap"); if(!tap) return;
