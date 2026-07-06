@@ -153,8 +153,9 @@ header{position:sticky;top:0;z-index:50;background:var(--sage);color:#fff;
 .searchwrap input{width:100%;padding:9px 12px 9px 34px;border-radius:20px;border:none;
   font-size:15px;background:rgba(255,255,255,.95);color:var(--ink)}
 .searchwrap svg{position:absolute;left:11px;top:9px;width:16px;height:16px;opacity:.5}
-.tabs{display:flex;gap:4px;margin-top:9px;background:rgba(255,255,255,.12);padding:3px;border-radius:12px}
-.tabs button{flex:1;padding:7px 2px;border-radius:9px;font-size:11.5px;font-weight:600;color:#fff;opacity:.8;white-space:nowrap}
+.tabs{display:flex;gap:4px;margin-top:9px;background:rgba(255,255,255,.12);padding:3px;border-radius:12px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:1 0 auto;min-width:52px;padding:7px 6px;border-radius:9px;font-size:11.5px;font-weight:600;color:#fff;opacity:.8;white-space:nowrap}
 .tabs button.on{background:var(--card);color:var(--sage-dark);opacity:1;box-shadow:var(--shadow)}
 .sortbar{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12.5px;color:rgba(255,255,255,.9)}
 .sortbar select{background:rgba(255,255,255,.95);color:var(--ink);border:none;border-radius:8px;
@@ -235,7 +236,14 @@ main{padding:12px 12px 40px;max-width:820px;margin:0 auto}
 .ent.cur{outline:2px solid var(--sage);outline-offset:-2px;background:rgba(91,114,99,.14)}
 .curtag{color:var(--sage);font-size:10px;font-weight:700;margin-left:4px}
 .subnote{margin-top:8px;font-size:12px;color:var(--muted)}
-.ent[onclick]:active{background:rgba(91,114,99,.2)}
+.ent[onclick]:active,.ent[data-wishadd]:active{background:rgba(91,114,99,.2)}
+.wish{margin-left:auto;flex:none;font-size:18px;line-height:1;color:var(--muted);padding-left:8px}
+.wish.on{color:var(--accent)}
+.ent .tag.u + .wish{margin-left:8px}
+.wremove{margin-left:auto;flex:none;font-size:20px;color:var(--accent);width:36px;height:36px}
+.wishrow{align-items:center}
+.winput{width:100%;padding:12px;border:1px solid var(--line);border-radius:11px;font-size:15px;margin-bottom:10px;background:var(--card);font-family:inherit}
+.winput:focus{outline:2px solid var(--sage-light);border-color:var(--sage)}
 
 /* detail sheet */
 .scrim{position:fixed;inset:0;background:rgba(30,26,18,.5);z-index:100;opacity:0;
@@ -299,6 +307,7 @@ main{padding:12px 12px 40px;max-width:820px;margin:0 auto}
     <button data-v="series">Series</button>
     <button data-v="authors">Authors</button>
     <button data-v="genres">Genres</button>
+    <button data-v="wishlist">Wishlist</button>
   </div>
   <div class="sortbar" id="sortbar">
     <span>Sort</span>
@@ -335,6 +344,32 @@ function load(){
   return CATALOG.map(b=>({...b}));
 }
 function persist(){ try{ localStorage.setItem("lib_books", JSON.stringify(books)); }catch(e){} }
+
+/* ---------- wishlist ---------- */
+let wishlist = (()=>{ try{ return JSON.parse(localStorage.getItem("lib_wishlist")||"[]"); }catch(e){ return []; } })();
+function saveWish(){ try{ localStorage.setItem("lib_wishlist", JSON.stringify(wishlist)); }catch(e){} }
+const wkey = (title,author)=> norm(title)+"|"+norm(author||"");
+function isWished(title,author){ return wishlist.some(w=>w.key===wkey(title,author)); }
+function ownedAlready(title){ return books.some(b=>!b.placeholder && norm(b.title)===norm(title)); }
+function addWish(item){
+  const key = wkey(item.title, item.author);
+  if(wishlist.some(w=>w.key===key)) return false;
+  const w = {key, id:"w"+key, title:item.title, author:item.author||"", series:item.series||"",
+    index:item.index||"", year:item.year||"", release_date:item.release_date||"", status:item.status||"", isbn:item.isbn||"", cover:item.cover||""};
+  wishlist.push(w); saveWish();
+  if(!w.cover) resolveCover(w).then(u=>{ if(u){ w.cover=u; saveWish(); } });
+  return true;
+}
+function removeWish(key){ wishlist = wishlist.filter(w=>w.key!==key); saveWish(); }
+function toggleWishEntry(seriesName, title){
+  const db = SERIES_DB[seriesName];
+  const e = db ? db.entries.find(x=>norm(x.title)===norm(title)) : null;
+  const author = db?db.author:"";
+  const key = wkey(title, author);
+  if(wishlist.some(w=>w.key===key)){ removeWish(key); toast("Removed from wishlist"); }
+  else { addWish({title, author, series:seriesName, index:e?e.index:"", year:e?e.year:"", release_date:e?(e.release_date||""):"", status:e?e.status:""}); toast("Added to wishlist ♥"); }
+  render();
+}
 
 /* ---------- cover fetching (Open Library) ---------- */
 const coverCache = JSON.parse(localStorage.getItem("lib_covers")||"{}");
@@ -385,7 +420,7 @@ async function pumpCovers(){
   if(idx<0) return;
   const el = pendingCovers.splice(idx,1)[0];
   coverBusy++;
-  try{ const b=books.find(x=>x.id==el.dataset.id); if(b){ const url=await resolveCover(b); if(url) await setCover(el,url); } }catch(e){}
+  try{ const b=books.find(x=>x.id==el.dataset.id)||wishlist.find(w=>w.id==el.dataset.id); if(b){ const url=await resolveCover(b); if(url) await setCover(el,url); } }catch(e){}
   coverBusy--; pumpCovers();
 }
 function wireCovers(root){
@@ -429,8 +464,9 @@ function filtered(){
 /* ---------- views ---------- */
 function render(){
   document.getElementById("count").textContent = books.length+" books";
-  document.getElementById("sortbar").style.display = (view==="series")?"none":"flex";
+  document.getElementById("sortbar").style.display = (view==="series"||view==="wishlist")?"none":"flex";
   const m = document.getElementById("main");
+  if(view==="wishlist"){ renderWishlist(m); wireCovers(m); return; }
   const data = filtered();
   if(!data.length){ m.innerHTML = `<div class="empty">No books match “${esc(query)}”.</div>`; return; }
   if(view==="covers") renderCovers(m,data);
@@ -438,6 +474,28 @@ function render(){
   else if(view==="series") renderSeries(m);
   else renderGroups(m,data, view==="authors"?"author":"genre");
   wireCovers(m);
+}
+
+function renderWishlist(m){
+  document.getElementById("viewnote").textContent = wishlist.length+" to get";
+  const q=norm(query);
+  const items = wishlist.filter(w=>!q||norm(w.title).includes(q)||norm(w.author).includes(q)||norm(w.series).includes(q));
+  const addBar = `<button class="imp" style="margin:0 0 12px" onclick="openAddWish()">＋ Add a book to the wishlist</button>`;
+  if(!wishlist.length){
+    m.innerHTML = addBar + `<div class="empty">Your wishlist is empty.<br><span style="font-size:12.5px">Open the <b>Series</b> tab and tap any book you're missing or an upcoming release to add it here — or use the button above.</span></div>`;
+    return;
+  }
+  const rows = items.map(w=>{
+    const up = w.status==="upcoming";
+    const owned = ownedAlready(w.title);
+    const sub = [w.author, up?("Releases "+(w.release_date||"TBA")):w.year, w.series?(esc(w.series)+(w.index?(" #"+w.index):"")):""].filter(Boolean).join(" · ");
+    return `<div class="row lg wishrow" onclick="openWish('${esc(w.key)}')">
+      <div class="mini" data-id="${esc(w.id)}"><div class="mph">${esc(w.title)}</div></div>
+      <div class="rmain"><div class="rt">${esc(w.title)}${up?' <span class="curtag" style="color:var(--up)">upcoming</span>':""}${owned?' <span class="curtag">✓ own it now</span>':""}</div><div class="rs">${sub}</div></div>
+      <button class="wremove" onclick="event.stopPropagation();removeWish('${esc(w.key)}');render();" aria-label="Remove">♥</button>
+    </div>`;
+  }).join("");
+  m.innerHTML = addBar + `<div class="group open"><div class="glist">${rows}</div></div>`;
 }
 
 function renderList(m,data){
@@ -494,7 +552,7 @@ function seriesMatch(seriesName){
   // returns {db, owned:[{book}], entries:[{...,have,book}], haveCount, total, upcoming:[]}
   const db = SERIES_DB[seriesName];
   const owned = books.filter(b=>b.series===seriesName);
-  if(!db) return {db:null, owned, entries:[], haveCount:owned.length, total:owned.length, upcoming:[]};
+  if(!db) return {name:seriesName, db:null, owned, entries:[], haveCount:owned.length, total:owned.length, upcoming:[]};
   const ownedNorm = owned.map(b=>norm(b.title));
   const placeholder = owned.some(b=>b.placeholder);
   const entries = db.entries.map(e=>{
@@ -505,7 +563,7 @@ function seriesMatch(seriesName){
   const upcoming = entries.filter(e=>e.status==="upcoming");
   const haveCount = placeholder ? owned.length : published.filter(e=>e.have).length;
   const total = published.length;
-  return {db, owned, entries, published, upcoming, haveCount, total, placeholder};
+  return {name:seriesName, db, owned, entries, published, upcoming, haveCount, total, placeholder};
 }
 
 function ownedIdForEntry(s, e){
@@ -517,11 +575,18 @@ function entryRow(s, e, curId){
   const cls = up?"up":(s.placeholder?"ref":(e.have?"have":"miss"));
   const oid = (e.have && !s.placeholder) ? ownedIdForEntry(s,e) : null;
   const isCur = curId!=null && oid===curId;
-  const tag = up?`<span class="tag u">${esc(e.release_date||"upcoming")}</span>`
-                :(s.placeholder?"":(e.have?`<span class="check">✓</span>`:`<span class="tag m">missing</span>`));
-  const click = (oid!=null && oid!==curId) ? ` onclick="openBook(${oid})" style="cursor:pointer"` : "";
-  return `<div class="ent ${cls}${isCur?' cur':''}"${click}><div class="num">${esc(e.index||"•")}</div>
-    <div><div class="et">${esc(e.title)}${isCur?' <span class="curtag">this book</span>':''}</div>${e.year||e.release_date?`<div class="ey">${esc(up?("Releases "+(e.release_date||"TBA")):e.year)}</div>`:""}</div>${tag}</div>`;
+  const canWish = !e.have && !s.placeholder;                 // missing or upcoming -> wishlistable
+  const wished = canWish && isWished(e.title, s.db?s.db.author:"");
+  let right;
+  if(up) right = `<span class="tag u">${esc(e.release_date||"upcoming")}</span>`+(canWish?`<span class="wish ${wished?'on':''}">${wished?'♥':'♡'}</span>`:"");
+  else if(e.have) right = `<span class="check">✓</span>`;
+  else if(s.placeholder) right = "";
+  else right = `<span class="wish ${wished?'on':''}">${wished?'♥':'♡'}</span>`;
+  let attrs = "";
+  if(oid!=null && oid!==curId) attrs = ` onclick="openBook(${oid})" style="cursor:pointer"`;
+  else if(canWish) attrs = ` data-wishadd data-series="${esc(s.name)}" data-title="${esc(e.title)}" style="cursor:pointer"`;
+  return `<div class="ent ${cls}${isCur?' cur':''}"${attrs}><div class="num">${esc(e.index||"•")}</div>
+    <div><div class="et">${esc(e.title)}${isCur?' <span class="curtag">this book</span>':''}</div>${e.year||e.release_date?`<div class="ey">${esc(up?("Releases "+(e.release_date||"TBA")):e.year)}</div>`:""}</div>${right}</div>`;
 }
 function seriesEntriesHTML(s, curId){
   if(!s.db) return s.owned.map(b=>`<div class="ent have"><div class="num">•</div><div><div class="et">${esc(b.title)}</div></div><span class="check">✓</span></div>`).join("");
@@ -601,6 +666,48 @@ function openBook(id){
 function openSheet(){ document.getElementById("scrim").classList.add("on"); document.getElementById("sheet").classList.add("on"); }
 function closeSheet(){ document.getElementById("scrim").classList.remove("on"); document.getElementById("sheet").classList.remove("on"); }
 
+function openWish(key){
+  const w = wishlist.find(x=>x.key===key); if(!w) return;
+  const bl = buyLinks(w);
+  const owned = ownedAlready(w.title);
+  const up = w.status==="upcoming";
+  document.getElementById("sheetbody").innerHTML=`
+    <div class="dtop">
+      <div class="dcover" data-id="${esc(w.id)}" id="dcover"><div class="ph mph" style="font-size:11px;padding:8px;text-align:center">${esc(w.title)}</div></div>
+      <div class="dmeta">
+        <h2>${esc(w.title)}</h2>
+        <div class="dau">${esc(w.author)}</div>
+        <div>${w.series?`<span class="pill">${esc(w.series)}${w.index?(" #"+esc(w.index)):""}</span>`:""}${up?`<span class="pill" style="background:var(--up);color:#fff">Releases ${esc(w.release_date||"TBA")}</span>`:(w.year?`<span class="pill">${esc(w.year)}</span>`:"")}</div>
+        ${owned?`<div class="subnote" style="color:var(--sage)">✓ This is already in your library.</div>`:""}
+      </div>
+    </div>
+    <div class="sect"><h4>Local to Livingston, TN</h4><div class="btns">${bl.local}</div></div>
+    <div class="sect"><h4>Buy online</h4><div class="btns">${bl.online}</div></div>
+    <div class="sect"><button class="imp sec" onclick="removeWish('${esc(w.key)}');closeSheet();render();toast('Removed from wishlist');">♥ Remove from wishlist</button></div>`;
+  const dc=document.getElementById("dcover");
+  resolveCover(w).then(url=>{ if(url){ const img=new Image(); img.onload=()=>{dc.querySelector(".mph").style.display="none";dc.insertBefore(img,dc.firstChild);}; img.src=url; } });
+  openSheet();
+}
+function openAddWish(){
+  document.getElementById("sheetbody").innerHTML=`<div class="panel">
+    <h3>Add to wishlist</h3>
+    <p style="font-size:12.5px;color:var(--muted);margin:4px 0 10px">A book you'd like to buy or read. The cover and buy links fill in automatically.</p>
+    <input id="wtitle" class="winput" placeholder="Title" autocomplete="off">
+    <input id="wauthor" class="winput" placeholder="Author (optional)" autocomplete="off">
+    <button class="imp" onclick="submitAddWish()">Add to wishlist</button>
+  </div>`;
+  openSheet();
+  setTimeout(()=>document.getElementById("wtitle") && document.getElementById("wtitle").focus(), 220);
+}
+function submitAddWish(){
+  const t=(document.getElementById("wtitle").value||"").trim();
+  const a=(document.getElementById("wauthor").value||"").trim();
+  if(!t){ toast("Enter a title"); return; }
+  const added = addWish({title:t, author:a});
+  closeSheet(); view="wishlist"; setTab("wishlist");
+  toast(added?"Added to wishlist ♥":"Already on the wishlist");
+}
+
 /* ---------- settings / import ---------- */
 function openSettings(){
   document.getElementById("sheetbody").innerHTML=`<div class="panel">
@@ -675,6 +782,7 @@ document.getElementById("sort").addEventListener("change",e=>{ sortBy=e.target.v
 document.getElementById("q").addEventListener("input",e=>{ query=e.target.value; render(); });
 document.getElementById("gear").addEventListener("click",openSettings);
 document.getElementById("scrim").addEventListener("click",closeSheet);
+document.addEventListener("click",e=>{ const w=e.target.closest("[data-wishadd]"); if(w){ e.stopPropagation(); toggleWishEntry(w.dataset.series, w.dataset.title); } });
 let toastT; function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.classList.add("on"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("on"),2600); }
 
 render();
