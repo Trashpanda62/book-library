@@ -42,6 +42,13 @@ class H(BaseHTTPRequestHandler):
         self._send(204)
 
     def do_GET(self):
+        if self.path in ("/", "") or self.path.startswith("/?"):
+            # Root isn't an API path — send visitors to the actual app.
+            self.send_response(302)
+            cors(self)
+            self.send_header("Location", "https://trashpanda62.github.io/book-library/")
+            self.end_headers()
+            return
         if self.path.rstrip("/") == "/health":
             return self._send(200, b"ok", "text/plain")
         if self.path.rstrip("/") == "/library":
