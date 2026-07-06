@@ -397,6 +397,27 @@ html[data-theme="dark"] .danger{background:var(--card)}
 #reader .rtap{position:absolute;inset:0;z-index:5;-webkit-tap-highlight-color:transparent;touch-action:pan-y}
 #reader .rload{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;z-index:1}
 #reader .rfoot{flex:0 0 auto;text-align:center;font-size:12px;color:var(--muted);padding:6px;min-height:12px}
+/* ---------- in-app audiobook player ---------- */
+.listenbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:2px 0 4px;padding:13px;border:0;border-radius:12px;
+  background:var(--accent);color:#fff;font-size:15px;font-weight:700;cursor:pointer;box-shadow:var(--shadow)}
+.listenbtn:active{transform:translateY(1px)}
+#player{position:fixed;inset:0;z-index:400;background:var(--paper);display:none;flex-direction:column;color:var(--ink)}
+#player.on{display:flex}
+#player .pbar{display:flex;align-items:center;gap:6px;padding:10px;flex:0 0 auto}
+#player .pbar .x{border:0;background:transparent;font-size:20px;color:var(--ink);padding:6px 10px;cursor:pointer;border-radius:9px}
+#player .pbody{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:10px 22px 28px;text-align:center}
+#player .pcover{width:190px;height:190px;border-radius:16px;background:var(--sage);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;font-size:64px;overflow:hidden}
+#player .pcover img{width:100%;height:100%;object-fit:cover}
+#player .pt{font-size:18px;font-weight:700;line-height:1.25}
+#player .pa{color:var(--muted);font-size:14px;margin-top:-6px}
+#player .pscrub{width:100%;max-width:440px;accent-color:var(--accent)}
+#player .ptimes{display:flex;justify-content:space-between;width:100%;max-width:440px;font-size:12px;color:var(--muted);margin-top:-8px}
+#player .pctrl{display:flex;align-items:center;justify-content:center;gap:20px;margin-top:4px}
+#player .pctrl button{border:0;background:transparent;color:var(--ink);cursor:pointer;font-weight:700}
+#player .skip{font-size:14px;display:flex;flex-direction:column;align-items:center;line-height:1}
+#player .skip span{font-size:20px}
+#player .pplay{width:70px;height:70px;border-radius:50%;background:var(--accent);color:#fff;font-size:30px;box-shadow:var(--shadow)}
+#player .pspeed{margin-top:8px;font-size:13px;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:20px;padding:7px 16px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -463,6 +484,23 @@ html[data-theme="dark"] .danger{background:var(--card)}
     <div class="rtap" id="rtap"></div>
   </div>
   <div class="rfoot"><span id="rpage"></span></div>
+</div>
+<div id="player">
+  <div class="pbar"><button class="x" onclick="closePlayer()" aria-label="Close">&#10005;</button></div>
+  <div class="pbody">
+    <div class="pcover" id="pcover">&#127911;</div>
+    <div class="pt" id="ptitle2"></div>
+    <div class="pa" id="pauthor"></div>
+    <input class="pscrub" id="pscrub" type="range" min="0" max="1000" value="0">
+    <div class="ptimes"><span id="pcur">0:00</span><span id="pdur">--:--</span></div>
+    <div class="pctrl">
+      <button class="skip" onclick="playerSkip(-30)"><span>&#8630;</span>30s</button>
+      <button class="pplay" id="pplay" onclick="playerToggle()">&#9654;</button>
+      <button class="skip" onclick="playerSkip(30)"><span>&#8631;</span>30s</button>
+    </div>
+    <button class="pspeed" id="pspeed" onclick="playerCycleSpeed()">1.0&#215;</button>
+    <audio id="pau" preload="metadata"></audio>
+  </div>
 </div>
 <script>/*JSZIP*/</script>
 <script>/*EPUBJS*/</script>
@@ -648,6 +686,72 @@ function closeReader(){
 }
 document.addEventListener("keydown",e=>{ if(!document.getElementById("reader").classList.contains("on"))return;
   if(e.key==="ArrowLeft")readerNav(-1); else if(e.key==="ArrowRight")readerNav(1); else if(e.key==="Escape")closeReader(); });
+
+/* ---------- in-app audiobook player (HTML5 audio over the Range-streaming /audiobook proxy) ---------- */
+let AUDIOBOOKS=[], _auSlug=null, _auPart=0, _auParts=1, _auSaveT=0;
+const _pau = () => document.getElementById("pau");
+async function pullAudiobooks(){
+  const url=syncURL(); if(!url) return;
+  try{ const r=await fetch(url+"/audiobooks",{cache:"no-store"}); if(!r.ok) return;
+    AUDIOBOOKS=((await r.json())||[]).filter(a=>a&&a.title); render();
+  }catch(e){}
+}
+function audiobookFor(b){
+  if(!b||!AUDIOBOOKS.length) return null;
+  const t=normT(b.title); if(t.length<2) return null;
+  const bsur=surnameOf(b.author);
+  for(const a of AUDIOBOOKS){ const at=normT(a.title);
+    if(at===t||at.startsWith(t+" ")||t.startsWith(at+" ")){
+      const asur=surnameOf(a.author);
+      if(!bsur||!asur||bsur===asur) return a;
+    }
+  }
+  return null;
+}
+function openPlayerBook(libId){ const b=books.find(x=>x.id==libId); if(!b) return; const a=audiobookFor(b); if(!a){ toast("No audiobook available yet"); return; } openPlayer(a,b); }
+function openPlayer(ab,b){
+  _auSlug=ab.slug; _auParts=ab.parts||1;
+  document.getElementById("ptitle2").textContent=ab.title||"";
+  document.getElementById("pauthor").textContent=ab.author||(b&&b.author)||"";
+  const P=document.getElementById("player"); P.classList.add("on");
+  try{ history.pushState({player:1},""); }catch(e){}
+  const pc=document.getElementById("pcover"); pc.textContent="🎧";
+  if(b) resolveCover(b).then(u=>{ if(u){ const i=new Image(); i.onload=()=>{pc.textContent="";pc.appendChild(i);}; i.src=u; } });
+  const au=_pau();
+  const sp=parseFloat(localStorage.getItem("lib_aspeed")||"1"); au.playbackRate=sp;
+  document.getElementById("pspeed").textContent=sp.toFixed(1)+"×";
+  const saved=JSON.parse(localStorage.getItem("lib_apos_"+ab.slug)||"null");
+  _auPart=(saved&&saved.part<_auParts)?saved.part:0;
+  loadPart(_auPart, saved?saved.time:0, false);
+}
+function loadPart(i,seek,autoplay){
+  _auPart=i; const au=_pau();
+  au.src=syncURL()+"/audiobook/"+_auSlug+"/"+i; au.load();
+  const go=()=>{ if(seek>0){ try{au.currentTime=seek;}catch(e){} } if(autoplay) au.play().catch(()=>{}); au.removeEventListener("loadedmetadata",go); };
+  au.addEventListener("loadedmetadata",go);
+}
+function playerToggle(){ const au=_pau(); if(au.paused) au.play().catch(()=>{}); else au.pause(); }
+function playerSkip(s){ const au=_pau(); au.currentTime=Math.max(0,Math.min((au.duration||1e9),(au.currentTime||0)+s)); }
+function playerCycleSpeed(){ const seq=[1,1.25,1.5,1.75,2,0.8]; const au=_pau();
+  let i=seq.findIndex(x=>Math.abs(x-au.playbackRate)<0.01); const sp=seq[(i+1)%seq.length];
+  au.playbackRate=sp; localStorage.setItem("lib_aspeed",sp); document.getElementById("pspeed").textContent=sp.toFixed(1)+"×"; }
+function fmtT(s){ s=Math.floor(s||0); const h=Math.floor(s/3600),m=Math.floor(s%3600/60),ss=s%60; return (h?h+":"+String(m).padStart(2,"0"):m)+":"+String(ss).padStart(2,"0"); }
+function savePos(){ if(!_auSlug) return; const au=_pau(); try{ localStorage.setItem("lib_apos_"+_auSlug, JSON.stringify({part:_auPart,time:au.currentTime||0})); }catch(e){} }
+function closePlayer(){ const P=document.getElementById("player"); if(!P.classList.contains("on")) return; _pau().pause(); savePos(); P.classList.remove("on"); if(history.state&&history.state.player){ try{history.back();}catch(e){} } }
+(function(){
+  const au=_pau(); if(!au) return;
+  au.addEventListener("timeupdate",()=>{
+    const d=au.duration||0; document.getElementById("pcur").textContent=fmtT(au.currentTime);
+    if(d){ document.getElementById("pdur").textContent=fmtT(d); const sc=document.getElementById("pscrub"); if(!sc._drag) sc.value=Math.round(1000*au.currentTime/d); }
+    const now=Date.now(); if(now-_auSaveT>3000){ _auSaveT=now; savePos(); }
+  });
+  au.addEventListener("play",()=>{ document.getElementById("pplay").innerHTML="&#10074;&#10074;"; });
+  au.addEventListener("pause",()=>{ document.getElementById("pplay").innerHTML="&#9654;"; });
+  au.addEventListener("ended",()=>{ if(_auPart+1<_auParts) loadPart(_auPart+1,0,true); });
+  const sc=document.getElementById("pscrub");
+  sc.addEventListener("input",()=>{ sc._drag=true; });
+  sc.addEventListener("change",()=>{ const d=au.duration||0; if(d) au.currentTime=d*sc.value/1000; sc._drag=false; });
+})();
 
 /* ---------- wishlist ---------- */
 let wishlist = (()=>{ try{ return JSON.parse(localStorage.getItem("lib_wishlist")||"[]"); }catch(e){ return []; } })();
@@ -1081,6 +1185,7 @@ function openBook(id){
   const b=books.find(x=>x.id==id); if(!b) return;
   const bl=buyLinks(b);
   const eb=ebookFor(b);
+  const ab=audiobookFor(b);
   let seriesBlock="";
   if(b.series){
     const s=seriesMatch(b.series);
@@ -1111,7 +1216,7 @@ function openBook(id){
       </div>
     </div>
     ${b.notes?`<div class="dnotes">${esc(b.notes)}</div>`:""}
-    ${eb?`<div class="sect"><button class="readbtn" onclick="openReaderBook(${b.id})">📖 Read this book</button></div>`:""}
+    ${(eb||ab)?`<div class="sect">${eb?`<button class="readbtn" onclick="openReaderBook(${b.id})">📖 Read this book</button>`:""}${ab?`<button class="listenbtn" onclick="openPlayerBook(${b.id})">🎧 Listen to audiobook</button>`:""}</div>`:""}
     <div class="sect"><h4>Reading status${b.finished?` · finished ${esc(b.finished)}`:""}</h4>${statusSeg}<div style="margin-top:12px">${stars}</div></div>
     ${seriesBlock}
     <div class="sect"><h4>Borrow — free</h4><div class="btns">${bl.borrow}</div></div>
@@ -1509,7 +1614,10 @@ function applyImport(merge){
 function applyView(v){ view=v; try{localStorage.setItem("lib_view",v);}catch(e){} document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===v)); render(); }
 function setTab(v){ if(v!==view){ try{ history.pushState({view:v}, ""); }catch(e){} } applyView(v); }
 addEventListener("popstate",(e)=>{
-  // 0) an open reader: back closes it (not the app)
+  // 0) an open reader/player: back closes it (not the app)
+  if(document.getElementById("player").classList.contains("on")){
+    _pau().pause(); savePos(); document.getElementById("player").classList.remove("on"); return;
+  }
   if(document.getElementById("reader").classList.contains("on")){
     const R=document.getElementById("reader"); R.classList.remove("on");
     if(_rendition){ try{_rendition.destroy();}catch(x){} _rendition=null; }
@@ -1596,7 +1704,7 @@ if(isShare()){
     try{ history.replaceState({view:view}, ""); }catch(e){}   // seed history so back is well-defined
   })();
   if(syncURL()) pullSync(true);   // auto-pull latest on launch if sync is configured
-  if(syncURL()) pullEbooks();     // load which owned books have a readable ebook
+  if(syncURL()){ pullEbooks(); pullAudiobooks(); }  // load which owned books have an ebook / audiobook
   render();
 }
 </script>
