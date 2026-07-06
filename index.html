@@ -5,7 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#5b7263">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Library">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="favicon.png">
 <title>Our Library</title>
 <style>
 :root{
@@ -596,6 +601,7 @@ function openSettings(){
     <p style="font-size:13px;color:var(--muted);margin:4px 0 0">${books.length} books · ${Object.keys(SERIES_DB).length} series tracked</p>
     <label class="imp" for="csv">Import from Libib (CSV)</label>
     <input id="csv" type="file" accept=".csv,text/csv" style="display:none">
+    <button class="imp sec" onclick="installApp()">Install app on this device</button>
     <button class="imp sec" onclick="resetLib()">Reset to sample library</button>
     <div class="hint"><b>Export from Libib</b> — this only works on the <b>website</b>, not the phone app (the app is for scanning books in, not exporting):
       <ol><li>Go to <b>libib.com</b> in a browser and sign in (on a phone, turn on "Desktop site")</li>
@@ -665,6 +671,15 @@ document.getElementById("gear").addEventListener("click",openSettings);
 document.getElementById("scrim").addEventListener("click",closeSheet);
 document.addEventListener("click",e=>{ const w=e.target.closest("[data-wishadd]"); if(w){ e.stopPropagation(); toggleWishEntry(w.dataset.series, w.dataset.title); } });
 let toastT; function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.classList.add("on"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("on"),2600); }
+
+/* ---------- installable PWA ---------- */
+let deferredInstall=null;
+addEventListener("beforeinstallprompt",e=>{ e.preventDefault(); deferredInstall=e; });
+async function installApp(){
+  if(deferredInstall){ deferredInstall.prompt(); const r=await deferredInstall.userChoice; deferredInstall=null; toast(r.outcome==="accepted"?"Installing…":"Maybe later"); }
+  else { toast("Use your browser's Share → Add to Home Screen"); }
+}
+if("serviceWorker" in navigator){ addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{})); }
 
 render();
 </script>
