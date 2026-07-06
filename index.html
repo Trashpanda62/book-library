@@ -597,12 +597,12 @@ function openSettings(){
     <label class="imp" for="csv">Import from Libib (CSV)</label>
     <input id="csv" type="file" accept=".csv,text/csv" style="display:none">
     <button class="imp sec" onclick="resetLib()">Reset to sample library</button>
-    <div class="hint"><b>How to export from Libib</b> (on Dani's phone):
-      <ol><li>Open the Libib app → <b>Menu</b> (☰)</li>
-      <li>Tap your library → <b>Settings / Manage</b></li>
-      <li>Choose <b>Export</b> → <b>CSV</b> (email it to yourself or save to Files)</li>
-      <li>Come back here → <b>Import from Libib</b> → pick that .csv</li></ol>
-      Covers, genres and series update automatically from the ISBNs in the file.</div>
+    <div class="hint"><b>Export from Libib</b> — this only works on the <b>website</b>, not the phone app (the app is for scanning books in, not exporting):
+      <ol><li>Go to <b>libib.com</b> in a browser and sign in (on a phone, turn on "Desktop site")</li>
+      <li>Top-right <b>account menu → Settings</b></li>
+      <li>Open the <b>Libraries</b> tab → <b>Export Library (.csv)</b> → pick the library</li>
+      <li>Save the .csv, then come back here → <b>Import from Libib</b> → pick that file</li></ol>
+      Covers, genres and series fill in automatically from the ISBNs in the file.</div>
   </div>`;
   document.getElementById("csv").addEventListener("change", handleCSV);
   openSheet();
