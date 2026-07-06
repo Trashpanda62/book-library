@@ -1,44 +1,42 @@
-# Cross-device sync (tailnet, shared file)
+# Cross-device sync — LIVE
 
-The app normally stores your library in each device's browser. To make **your phone,
-Dani's phone, and the PC all show the same library**, run one tiny sync endpoint on a
-box that's always on (e.g. the TrueNAS server) and point every device at it.
+Cross-device sync is **set up and running** on the home TrueNAS. Every device that opens
+the app while on the tailnet shares one library (last edit wins). Nothing to configure —
+the endpoint is baked into the app.
 
-The app is served from HTTPS (GitHub Pages), so the sync endpoint **must be HTTPS** too —
-`tailscale serve` gives you that for free on your tailnet.
+**Endpoint:** `https://keen-truenas.tailfbd25a.ts.net:8443` (tailnet-only, not public)
 
-## 1. Run the sync server on a tailnet host
+## How it's deployed (for reference / rebuild)
 
-```bash
-python sync_server.py --port 8799 --file /mnt/Truenas/Network-Drive/claude-share/library.json
-```
+Host: TrueNAS `keen-truenas` (100.87.208.99).
 
-Keep it running (systemd service, a Task Scheduler job on Windows, or `nohup`/tmux on Linux).
-It stores everything in that one JSON file — that file *is* the shared library, so it's
-also your backup.
+1. **Sync server** — a Docker container, auto-restarts on boot:
+   ```bash
+   docker run -d --name booklib-sync --restart unless-stopped --network host \
+     -v /mnt/Truenas/Network-Drive/book-library-sync:/data \
+     python:3.12-alpine \
+     python3 /data/sync_server.py --port 8799 --file /data/library.json
+   ```
+   The shared library lives at `/mnt/Truenas/Network-Drive/book-library-sync/library.json`
+   (also reachable on Windows at `Z:\book-library-sync\library.json`). That file *is* the
+   backup — copy it anytime.
 
-## 2. Expose it over HTTPS on the tailnet
+2. **HTTPS over tailnet** — `tailscale serve` inside the host-networked `tailscale` container
+   proxies the tailnet HTTPS port to the sync server:
+   ```bash
+   docker exec tailscale tailscale serve --bg --https=8443 http://localhost:8799
+   ```
+   (Port 8443 is used because TrueNAS nginx already owns 443. The serve config persists.)
 
-```bash
-tailscale serve --bg --https=443 http://localhost:8799
-```
+## Ops
 
-Tailscale prints the URL, e.g. `https://truenas.tail1234.ts.net`. That host is only
-reachable by your own tailnet devices — it is **not** public.
-
-Check it: open `https://truenas.tail1234.ts.net/health` on a device that's on the tailnet;
-it should say `ok`.
-
-## 3. Point the app at it
-
-On each device: open the app → ⚙ **Settings → Sync across devices** → paste
-`https://truenas.tail1234.ts.net` → **Save endpoint**. Tap **Sync now ↓** once to pull.
-
-From then on, every change pushes automatically, and **Sync now** pulls the latest.
-Last edit wins. Devices must be on the tailnet (VPN on) to sync; offline, they keep working
-locally and sync next time they're on.
+- Status:   `docker exec tailscale tailscale serve status`
+- Logs:     `docker logs booklib-sync`
+- Restart:  `docker restart booklib-sync`
+- Turn off in the app: Settings → Sync → clear the box → Save.
+- Reset the shared library: `rm /mnt/Truenas/Network-Drive/book-library-sync/library.json`
 
 ## Notes
-- No auth on the endpoint by design — access is already gated by tailnet membership.
-- To reset sync, clear the endpoint field and Save.
-- The JSON file is safe to copy/back up anytime.
+- No auth by design — access is gated by tailnet membership.
+- Devices must be on the tailnet (VPN on) to sync; offline they keep working locally and
+  sync next time they're on.
