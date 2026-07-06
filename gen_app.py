@@ -223,6 +223,8 @@ main{padding:12px 12px 40px;max-width:820px;margin:0 auto}
 /* series view */
 .scard{background:var(--card);border-radius:14px;border:1px solid var(--line);box-shadow:var(--shadow);
   padding:13px 14px 14px;margin-bottom:12px}
+.scard.coming{border:1px solid var(--up);background:linear-gradient(180deg,rgba(138,109,59,.10),var(--card))}
+.scard.coming h3{color:var(--up)}
 .scard h3{margin:0;font-size:16px}
 .scard .sauth{font-size:12px;color:var(--muted);margin-top:1px}
 .prog{display:flex;align-items:center;gap:9px;margin:10px 0 4px}
@@ -744,13 +746,33 @@ function seriesEntriesHTML(s, curId){
   if(extra) html+=`<div class="ent ref"><div class="num">…</div><div><div class="et" style="color:var(--muted);font-weight:500">+${extra} more in the series</div></div></div>`;
   return html;
 }
+function comingSoonHTML(allNames){
+  // gather every unreleased entry across the tracked series, soonest first
+  const up=[];
+  allNames.forEach(n=>{ const s=seriesMatch(n); (s.upcoming||[]).forEach(e=> up.push({series:n, author:(s.db?s.db.author:""), ...e})); });
+  if(!up.length) return "";
+  const dkey=e=>{ const m=(e.release_date||"").match(/(\d{4})-(\d{2})-(\d{2})/); if(m) return m[1]+m[2]+m[3];
+    const y=(e.release_date||e.year||"").match(/(\d{4})/); return (y?y[1]:"9999")+"99"; };
+  up.sort((a,b)=>dkey(a).localeCompare(dkey(b)));
+  const rows=up.map(e=>{
+    const wished=isWished(e.title, e.author);
+    return `<div class="ent up" data-wishadd data-series="${esc(e.series)}" data-title="${esc(e.title)}" style="cursor:pointer">
+      <div class="num">${esc(e.index||"•")}</div>
+      <div><div class="et">${esc(e.title)}</div><div class="ey">${esc(e.series)} · ${esc(e.author)}</div></div>
+      <span class="tag u">${esc(e.release_date||"TBA")}</span><span class="wish ${wished?'on':''}">${wished?'♥':'♡'}</span></div>`;
+  }).join("");
+  return `<div class="scard coming"><h3>📅 Coming Soon</h3>
+    <div class="sauth">Unreleased books in your series — tap to add to the wishlist</div>
+    <div class="entries" style="margin-top:10px">${rows}</div></div>`;
+}
 function renderSeries(m){
   const q=norm(query);
   let names=[...new Set(books.filter(b=>b.series).map(b=>b.series))];
   names=names.filter(n=>!q||norm(n).includes(q)||books.some(b=>b.series===n&&(norm(b.title).includes(q)||norm(b.author).includes(q))));
   names.sort();
   if(!names.length){ m.innerHTML=`<div class="empty">No series found.</div>`; return; }
-  m.innerHTML = names.map(n=>{
+  const coming = q ? "" : comingSoonHTML(names);
+  m.innerHTML = coming + names.map(n=>{
     const s=seriesMatch(n);
     const auth=s.db?s.db.author:(s.owned[0]?s.owned[0].author:"");
     const pct= s.total? Math.round(100*s.haveCount/s.total):100;

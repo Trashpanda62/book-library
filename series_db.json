@@ -106,6 +106,13 @@
      "year": "2025",
      "status": "published",
      "release_date": ""
+    },
+    {
+     "index": "9",
+     "title": "Sleep Tight, Evangeline",
+     "year": "",
+     "status": "upcoming",
+     "release_date": "2026 (TBA)"
     }
    ]
   },
@@ -387,6 +394,20 @@
      "year": "2024",
      "status": "published",
      "release_date": ""
+    },
+    {
+     "index": "24",
+     "title": "Denied Access",
+     "year": "2026",
+     "status": "upcoming",
+     "release_date": "2026-07-14"
+    },
+    {
+     "index": "25",
+     "title": "Double Tap",
+     "year": "2026",
+     "status": "upcoming",
+     "release_date": "2026-09-22"
     }
    ]
   },
@@ -564,6 +585,13 @@
      "year": "2024",
      "status": "published",
      "release_date": ""
+    },
+    {
+     "index": "25",
+     "title": "Choke Point",
+     "year": "2026",
+     "status": "published",
+     "release_date": ""
     }
    ]
   },
@@ -739,6 +767,20 @@
      "index": "24",
      "title": "The 24th Hour",
      "year": "2024",
+     "status": "published",
+     "release_date": ""
+    },
+    {
+     "index": "25",
+     "title": "25 Alive",
+     "year": "2025",
+     "status": "published",
+     "release_date": ""
+    },
+    {
+     "index": "26",
+     "title": "26 Beauties",
+     "year": "2026",
      "status": "published",
      "release_date": ""
     }
