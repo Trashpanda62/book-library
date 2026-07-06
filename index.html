@@ -247,6 +247,17 @@ html[data-theme="dark"] .danger{background:var(--card)}
 .setgrp{margin-top:16px}
 .setlab{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:2px}
 .setgrp .imp{margin-top:8px}
+/* shelf visualization */
+.shelfwrap{margin-bottom:20px}
+.shelfhdr{font-size:12px;font-weight:700;color:var(--sage-dark);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.shelfhdr span{color:var(--muted);font-weight:600}
+.shelf{display:flex;flex-wrap:wrap;align-items:flex-end;gap:2px;padding:12px 8px 0;
+  background:linear-gradient(180deg,rgba(0,0,0,.03),transparent);border-bottom:9px solid #6b4e34;
+  border-radius:3px;box-shadow:inset 0 -12px 14px -12px rgba(0,0,0,.35)}
+.spine{writing-mode:vertical-rl;text-orientation:mixed;color:#fff;font-size:10px;font-weight:700;line-height:1.05;
+  padding:9px 3px;border-radius:3px 3px 0 0;cursor:pointer;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+  box-shadow:1px 0 2px rgba(0,0,0,.25);border-top:2px solid rgba(255,255,255,.18)}
+.spine:active{filter:brightness(1.15)}
 </style>
 </head>
 <body>
@@ -269,6 +280,7 @@ html[data-theme="dark"] .danger{background:var(--card)}
     <div class="layout" id="layout">
       <button data-l="covers" class="on" aria-label="Cover grid">▦</button>
       <button data-l="list" aria-label="List">☰</button>
+      <button data-l="shelf" aria-label="Shelf view">📚</button>
     </div>
     <select id="groupby" class="lbsel" aria-label="Group by">
       <option value="none">All books</option>
@@ -276,6 +288,7 @@ html[data-theme="dark"] .danger{background:var(--card)}
       <option value="genre">By genre</option>
       <option value="collection">By collection</option>
       <option value="shelf">By shelf</option>
+      <option value="type">By type</option>
     </select>
     <select id="sort" class="lbsel" aria-label="Sort">
       <option value="author">Author A–Z</option>
@@ -485,6 +498,9 @@ function filtered(){
   });
   return a;
 }
+const TYPE_LABEL={book:"Book",movie:"Movie",music:"Music",game:"Video game",boardgame:"Board game",other:"Other"};
+const TYPE_ICON={movie:"🎬",music:"🎵",game:"🎮",boardgame:"🎲",other:"📦"};
+const typeTag = b => (b.type&&b.type!=="book"&&TYPE_ICON[b.type]) ? `<span class="covtag" style="background:var(--sage-dark)">${TYPE_ICON[b.type]} ${esc(TYPE_LABEL[b.type])}</span>` : "";
 const STATUS_LABEL={toread:"To-read",reading:"Reading",read:"Read"};
 function statusBadge(b){ const s=b.status; if(!s||!STATUS_LABEL[s]) return ""; return `<span class="covtag ${s}">${s==="reading"?"Reading":s==="read"?"Read":"To-read"}</span>`; }
 function ministars(n){ n=n||0; return n?`<span class="ministars">${"★".repeat(n)}${"☆".repeat(5-n)}</span>`:""; }
@@ -503,6 +519,7 @@ function render(){
   const data = filtered();
   if(!data.length){ m.innerHTML = `<div class="empty">No books ${statusFilter?"on this shelf":"match"}${query?` “${esc(query)}”`:""}.</div>`; return; }
   if(groupBy!=="none") renderGroups(m,data,groupBy);
+  else if(layout==="shelf") renderShelf(m,data);
   else if(layout==="list") renderList(m,data);
   else renderCovers(m,data);
   wireCovers(m);
@@ -601,7 +618,7 @@ function renderCovers(m,data){
   document.getElementById("viewnote").textContent = data.length+" shown";
   m.innerHTML = `<div class="grid">`+data.map(b=>`
     <button class="bcard" onclick="openBook(${b.id})">
-      <div class="cover">${b.placeholder?'<span class="badge multi">series</span>':(b.series?'<span class="badge">series</span>':'')}${statusBadge(b)}
+      <div class="cover">${b.placeholder?'<span class="badge multi">series</span>':(b.series?'<span class="badge">series</span>':'')}${typeTag(b)||statusBadge(b)}
         <div class="ph" ${''}></div>
       </div>
       <div class="binfo"><div class="bt">${esc(b.title)}</div><div class="ba">${esc(b.author)}${b.rating?` ${ministars(b.rating)}`:""}</div></div>
@@ -614,17 +631,34 @@ function renderCovers(m,data){
   });
 }
 
+const GENRE_COLOR={ "Mystery & Thriller":"#7c4a3a","Historical Fiction":"#4d6455","Children's & YA":"#c07b2e",
+  "Fiction & Literature":"#41527a","Sci-Fi & Fantasy":"#4a3a6b","Classics":"#6b4a2a","Religion & Philosophy":"#7a6338",
+  "Health & Self-Help":"#2f7161","History & Politics":"#5a3a3a","Home & Reference":"#356048" };
+const genreColor = g => GENRE_COLOR[topGenre(g)] || "#5b7263";
+function renderShelf(m,data){
+  document.getElementById("viewnote").textContent = data.length+" spines";
+  const groups={}; data.forEach(b=>{ const s=b.shelf||"Unshelved"; (groups[s]=groups[s]||[]).push(b); });
+  const names=Object.keys(groups).sort((a,b)=>groups[b].length-groups[a].length||a.localeCompare(b));
+  m.innerHTML = names.map(n=>`<div class="shelfwrap">
+    <div class="shelfhdr">${esc(n)} <span>${groups[n].length}</span></div>
+    <div class="shelf">${groups[n].map(b=>{
+      const len=(b.title||"").length; const w=Math.max(20,Math.min(36,17+Math.round(len/3.5)));
+      const h=120+((len*13)%56); const light=(topGenre(b.genre)==="Children's & YA");
+      return `<div class="spine" onclick="openBook(${b.id})" style="width:${w}px;height:${h}px;background:${genreColor(b.genre)}${light?';color:#3a2a12':''}" title="${esc(b.title)} — ${esc(b.author)}">${esc(b.title)}</div>`;
+    }).join("")}</div></div>`).join("");
+}
+
 function renderGroups(m,data,key){
   const groups={};
   data.forEach(b=>{
     if(key==="collection"){ const cs=(b.collections&&b.collections.length)?b.collections:["Unfiled"]; cs.forEach(c=>{(groups[c]=groups[c]||[]).push(b);}); }
-    else { const g = key==="author"?(b.author||"—") : key==="shelf"?(b.shelf||"Unshelved") : topGenre(b.genre); (groups[g]=groups[g]||[]).push(b); }
+    else { const g = key==="author"?(b.author||"—") : key==="shelf"?(b.shelf||"Unshelved") : key==="type"?(TYPE_LABEL[b.type||"book"]||"Book") : topGenre(b.genre); (groups[g]=groups[g]||[]).push(b); }
   });
   const names=Object.keys(groups).sort((a,b)=>{
     if(key==="author"){ const ln=s=>{const p=s.trim().split(" ");return p[p.length-1];}; return norm(ln(a)).localeCompare(norm(ln(b))); }
     return groups[b].length - groups[a].length || a.localeCompare(b);  // biggest shelves first
   });
-  const label={author:"authors",genre:"genres",collection:"collections",shelf:"shelves"}[key]||"groups";
+  const label={author:"authors",genre:"genres",collection:"collections",shelf:"shelves",type:"types"}[key]||"groups";
   document.getElementById("viewnote").textContent = names.length+" "+label;
   m.innerHTML = names.map(n=>`
     <div class="group">
@@ -796,7 +830,7 @@ function openBook(id){
       <div class="dmeta">
         <h2>${esc(b.title)}</h2>
         <div class="dau">${esc(b.author)}</div>
-        <div>${b.genre?`<span class="pill">${esc(b.genre)}</span>`:""}${b.year?`<span class="pill">${esc(b.year)}</span>`:""}${b.shelf?`<span class="pill">${esc(b.shelf)}</span>`:""}${(b.collections||[]).map(c=>`<span class="pill coll">${esc(c)}</span>`).join("")}</div>
+        <div>${b.type&&b.type!=="book"?`<span class="pill" style="background:var(--sage);color:#fff">${TYPE_ICON[b.type]||""} ${esc(TYPE_LABEL[b.type])}</span>`:""}${b.genre?`<span class="pill">${esc(b.genre)}</span>`:""}${b.year?`<span class="pill">${esc(b.year)}</span>`:""}${b.shelf?`<span class="pill">${esc(b.shelf)}</span>`:""}${(b.collections||[]).map(c=>`<span class="pill coll">${esc(c)}</span>`).join("")}</div>
       </div>
     </div>
     ${b.notes?`<div class="dnotes">${esc(b.notes)}</div>`:""}
@@ -861,6 +895,7 @@ function openEdit(id){
     <div class="efield"><label>Series (optional)</label><input id="e_series" value="${esc(b.series||"")}"></div>
     <div class="efield"><label>Shelf / location (e.g. Bookcase 1, cube B3)</label><input id="e_shelf" value="${esc(b.shelf||"")}"></div>
     <div class="efield"><label>Collections (comma-separated — e.g. Dani, Kids, Book club)</label><input id="e_collections" value="${esc((b.collections||[]).join(", "))}" placeholder="Dani, Kids"></div>
+    <div class="efield"><label>Type</label><select id="e_type">${Object.keys(TYPE_LABEL).map(k=>`<option value="${k}"${(b.type||"book")===k?" selected":""}>${TYPE_LABEL[k]}</option>`).join("")}</select></div>
     <div class="efield"><label>Cover image URL (paste to override)</label><input id="e_cover" value="${esc(b.cover||"")}" placeholder="https://..."></div>
     <div class="efield"><label>Notes</label><textarea id="e_notes">${esc(b.notes||"")}</textarea></div>
     <button class="imp" onclick="saveEdit(${id})">Save changes</button>
@@ -874,6 +909,7 @@ function saveEdit(id){
   b.title=g("e_title")||b.title; b.author=g("e_author"); b.genre=g("e_genre")||"Uncategorized";
   b.year=g("e_year"); b.series=g("e_series"); b.shelf=g("e_shelf"); b.notes=g("e_notes");
   b.collections=g("e_collections").split(",").map(x=>x.trim()).filter(Boolean);
+  b.type=document.getElementById("e_type").value||"book";
   const cov=g("e_cover"); if(cov!==(b.cover||"")){ b.cover=cov; delete coverCache[ckey(b)]; }
   b.placeholder=false; persist(); closeSheet(); render(); toast("Saved");
 }
@@ -890,6 +926,7 @@ function openAddBook(){
     <div class="efield"><label>Author</label><input id="a_author" placeholder="Author"></div>
     <div class="efield"><label>Genre (optional)</label><input id="a_genre" placeholder="e.g. Historical Fiction"></div>
     <div class="efield"><label>Year (optional)</label><input id="a_year" placeholder="e.g. 2021"></div>
+    <div class="efield"><label>Type</label><select id="a_type">${Object.keys(TYPE_LABEL).map(k=>`<option value="${k}">${TYPE_LABEL[k]}</option>`).join("")}</select></div>
     <button class="imp" onclick="submitAddBook()">Add to library</button>
   </div>`;
   openSheet(); setTimeout(()=>document.getElementById("a_title")&&document.getElementById("a_title").focus(),220);
@@ -897,7 +934,7 @@ function openAddBook(){
 function submitAddBook(){
   const g=v=>document.getElementById(v).value.trim();
   const t=g("a_title"); if(!t){ toast("Enter a title"); return; }
-  books.push({ id:nextId(), title:t, author:g("a_author"), genre:g("a_genre")||"Uncategorized", year:g("a_year"), shelf:"Added", series:"", placeholder:false, isbn:"", cover:"", status:"toread", rating:0, notes:"", added:Date.now() });
+  books.push({ id:nextId(), title:t, author:g("a_author"), genre:g("a_genre")||"Uncategorized", year:g("a_year"), shelf:"Added", series:"", placeholder:false, isbn:"", cover:"", status:"toread", rating:0, notes:"", added:Date.now(), type:document.getElementById("a_type").value||"book" });
   persist(); closeSheetTo("library"); toast("Added to library");
 }
 
@@ -1132,6 +1169,10 @@ function handleCSV(e){
         iIsbn=find("ean_isbn13","isbn13","isbn_13","isbn"), iIsbn10=find("upc_isbn10","isbn10"),
         iGen=find("genres","genre"), iYr=find("publish_date","published","publish date","year"),
         iSer=find("series"), iGrp=find("group","collection","shelf","tags");
+      let impType="book";
+      if(find("platform")>=0) impType="game";
+      else if(find("director")>=0) impType="movie";
+      else if(find("artist")>=0 && iIsbn<0 && iT>=0) impType="music";
       const out=[];
       for(let r=1;r<rows.length;r++){ const c=rows[r]; if(!c||!(c[iT]||"").trim()) continue;
         let author = iA>=0?c[iA]:"";
@@ -1146,7 +1187,7 @@ function handleCSV(e){
         if(!series){ for(const sn in SERIES_DB){ if(SERIES_DB[sn].entries.some(en=>norm(en.title)===norm(c[iT]))){ series=sn; break; } } }
         out.push({ id:out.length+1, title:(c[iT]||"").trim(), author:author.trim()||"Unknown",
           genre, year, shelf:(iGrp>=0?(c[iGrp]||"").trim():"")||"Libib import", series, placeholder:false,
-          isbn, confidence:"import", notes:"" });
+          isbn, confidence:"import", notes:"", type:impType });
       }
       if(!out.length){ toast("No rows found — is this a Libib CSV?"); return; }
       promptImport(out);
