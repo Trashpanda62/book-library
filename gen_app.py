@@ -165,6 +165,13 @@ header{position:sticky;top:0;z-index:50;background:var(--sage);color:#fff;
 .sortbar{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12.5px;color:rgba(255,255,255,.9)}
 .sortbar select{background:rgba(255,255,255,.95);color:var(--ink);border:none;border-radius:8px;
   padding:5px 8px;font-size:12.5px;font-family:inherit}
+.libbar{display:flex;align-items:center;gap:7px;margin-top:8px;font-size:12.5px}
+.lbsel{background:rgba(255,255,255,.95);color:var(--ink);border:none;border-radius:8px;padding:6px 8px;
+  font-size:12.5px;font-family:inherit;max-width:34vw}
+.layout{display:flex;gap:0;background:rgba(255,255,255,.14);border-radius:8px;padding:2px;flex:none}
+.layout button{width:30px;height:26px;border-radius:6px;color:#fff;opacity:.75;font-size:14px;line-height:1}
+.layout button.on{background:var(--card);color:var(--sage-dark);opacity:1}
+.libbar #viewnote{margin-left:auto;color:rgba(255,255,255,.85);white-space:nowrap}
 
 main{padding:12px 12px 40px;max-width:820px;margin:0 auto}
 
@@ -369,25 +376,30 @@ html[data-theme="dark"] .danger{background:var(--card)}
     <input id="q" type="search" placeholder="Search title, author, series..." autocomplete="off">
   </div>
   <div class="tabs" id="tabs">
-    <button data-v="covers" class="on">Covers</button>
-    <button data-v="list">List</button>
+    <button data-v="library" class="on">Library</button>
     <button data-v="series">Series</button>
-    <button data-v="authors">Authors</button>
-    <button data-v="genres">Genres</button>
     <button data-v="wishlist">Wishlist</button>
     <button data-v="stats">Stats</button>
   </div>
-  <div class="sortbar" id="sortbar">
-    <span>Sort</span>
-    <select id="sort">
+  <div class="libbar" id="libbar">
+    <div class="layout" id="layout">
+      <button data-l="covers" class="on" aria-label="Cover grid">▦</button>
+      <button data-l="list" aria-label="List">☰</button>
+    </div>
+    <select id="groupby" class="lbsel" aria-label="Group by">
+      <option value="none">All books</option>
+      <option value="author">By author</option>
+      <option value="genre">By genre</option>
+    </select>
+    <select id="sort" class="lbsel" aria-label="Sort">
       <option value="author">Author A–Z</option>
       <option value="title">Title A–Z</option>
-      <option value="year_new">Year (newest)</option>
-      <option value="year_old">Year (oldest)</option>
-      <option value="added">Recently added</option>
-      <option value="rating">My rating</option>
+      <option value="year_new">Year ↓</option>
+      <option value="year_old">Year ↑</option>
+      <option value="added">Added</option>
+      <option value="rating">Rating</option>
     </select>
-    <span id="viewnote" style="margin-left:auto;opacity:.85"></span>
+    <span id="viewnote"></span>
   </div>
   <div class="filterbar" id="filterbar">
     <button class="chip on" data-f="">All</button>
@@ -412,7 +424,9 @@ const STORES = /*STORES*/;
 
 /* ---------- state ---------- */
 let books = load();
-let view = "covers", sortBy = "author", query = "", statusFilter = "";
+const pref = (k,d)=>{ try{ const v=localStorage.getItem(k); return v==null?d:v; }catch(e){ return d; } };
+let view = pref("lib_view","library"), layout = pref("lib_layout","covers"), groupBy = pref("lib_group","none");
+let sortBy = pref("lib_sort","author"), query = "", statusFilter = "";
 const norm = s => (s||"").toLowerCase().replace(/^(the|a|an) /,"").replace(/[^a-z0-9]+/g," ").trim();
 const enc = s => encodeURIComponent(s);
 const nextId = () => (books.reduce((m,b)=>Math.max(m, +b.id||0), 0) + 1);
@@ -590,18 +604,20 @@ function ministars(n){ n=n||0; return n?`<span class="ministars">${"★".repeat(
 /* ---------- views ---------- */
 function render(){
   document.getElementById("count").textContent = books.length+" books";
-  const hideExtras = (view==="series"||view==="wishlist"||view==="stats");
-  document.getElementById("sortbar").style.display = hideExtras?"none":"flex";
-  document.getElementById("filterbar").style.display = hideExtras?"none":"flex";
+  const inLib = (view==="library");
+  document.getElementById("libbar").style.display = inLib?"flex":"none";
+  document.getElementById("filterbar").style.display = inLib?"flex":"none";
   const m = document.getElementById("main");
   if(view==="wishlist"){ renderWishlist(m); wireCovers(m); return; }
   if(view==="stats"){ renderStats(m); return; }
+  if(view==="series"){ renderSeries(m); return; }
+  // library
   const data = filtered();
-  if(!data.length){ m.innerHTML = `<div class="empty">No books ${statusFilter?"in this shelf":"match"}${query?` “${esc(query)}”`:""}.</div>`; return; }
-  if(view==="covers") renderCovers(m,data);
-  else if(view==="list") renderList(m,data);
-  else if(view==="series") renderSeries(m);
-  else renderGroups(m,data, view==="authors"?"author":"genre");
+  if(!data.length){ m.innerHTML = `<div class="empty">No books ${statusFilter?"on this shelf":"match"}${query?` “${esc(query)}”`:""}.</div>`; return; }
+  if(groupBy==="author") renderGroups(m,data,"author");
+  else if(groupBy==="genre") renderGroups(m,data,"genre");
+  else if(layout==="list") renderList(m,data);
+  else renderCovers(m,data);
   wireCovers(m);
 }
 
@@ -824,7 +840,7 @@ function openWish(key){
     <div class="sect"><h4>Local to Livingston, TN</h4><div class="btns">${bl.local}</div></div>
     <div class="sect"><h4>Buy online</h4><div class="btns">${bl.online}</div></div>
     <div class="sect">
-      ${owned?"":`<button class="imp" onclick="gotIt('${esc(w.key)}');closeSheet();view='covers';setTab('covers');toast('Moved to your library ✓');">✓ I got this — move to Library</button>`}
+      ${owned?"":`<button class="imp" onclick="gotIt('${esc(w.key)}');closeSheet();setTab('library');toast('Moved to your library ✓');">✓ I got this — move to Library</button>`}
       <button class="imp sec" onclick="toggleWishPriority('${esc(w.key)}')">${w.priority?"★ Priority (tap to unstar)":"☆ Mark as priority"}</button>
       <button class="imp sec danger" onclick="removeWish('${esc(w.key)}');closeSheet();render();toast('Removed from wishlist');">Remove from wishlist</button>
     </div>`;
@@ -882,7 +898,7 @@ function submitAddBook(){
   const g=v=>document.getElementById(v).value.trim();
   const t=g("a_title"); if(!t){ toast("Enter a title"); return; }
   books.push({ id:nextId(), title:t, author:g("a_author"), genre:g("a_genre")||"Uncategorized", year:g("a_year"), shelf:"Added", series:"", placeholder:false, isbn:"", cover:"", status:"toread", rating:0, notes:"", added:Date.now() });
-  persist(); closeSheet(); view="covers"; setTab("covers"); toast("Added to library");
+  persist(); closeSheet(); setTab("library"); toast("Added to library");
 }
 
 /* ---------- add-by-ISBN / barcode scan ---------- */
@@ -952,7 +968,7 @@ function stamp(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMon
 function backupJSON(){ download("our-library-backup-"+stamp()+".json", JSON.stringify({version:2, exported:Date.now(), books, wishlist}, null, 1)); toast("Backup downloaded"); }
 function restoreJSON(e){ const f=e.target.files[0]; if(!f) return; const rd=new FileReader();
   rd.onload=()=>{ try{ const d=JSON.parse(rd.result); if(!Array.isArray(d.books)) throw 0;
-    books=d.books; wishlist=d.wishlist||[]; persist(); saveWish(); closeSheet(); view="covers"; setTab("covers"); toast("Restored "+books.length+" books"); }
+    books=d.books; wishlist=d.wishlist||[]; persist(); saveWish(); closeSheet(); setTab("library"); toast("Restored "+books.length+" books"); }
     catch(_){ toast("That isn't a valid backup file"); } };
   rd.readAsText(f); }
 function csvCell(s){ s=(s==null?"":String(s)); return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; }
@@ -1098,7 +1114,7 @@ function handleCSV(e){
           isbn, confidence:"import", notes:"" });
       }
       if(!out.length){ toast("No rows found — is this a Libib CSV?"); return; }
-      books=out; persist(); closeSheet(); view="covers"; setTab("covers"); render();
+      books=out; persist(); closeSheet(); setTab("library"); render();
       toast("Imported "+out.length+" books from Libib");
     }catch(err){ toast("Could not read that CSV"); }
   };
@@ -1106,9 +1122,13 @@ function handleCSV(e){
 }
 
 /* ---------- ui wiring ---------- */
-function setTab(v){ view=v; document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===v)); render(); }
+function setTab(v){ view=v; try{localStorage.setItem("lib_view",v);}catch(e){} document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===v)); render(); }
 document.getElementById("tabs").addEventListener("click",e=>{ const b=e.target.closest("button"); if(b) setTab(b.dataset.v); });
-document.getElementById("sort").addEventListener("change",e=>{ sortBy=e.target.value; render(); });
+document.getElementById("sort").addEventListener("change",e=>{ sortBy=e.target.value; try{localStorage.setItem("lib_sort",sortBy);}catch(e){} render(); });
+document.getElementById("groupby").addEventListener("change",e=>{ groupBy=e.target.value; try{localStorage.setItem("lib_group",groupBy);}catch(e){} updateLayoutVis(); render(); });
+document.getElementById("layout").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; layout=b.dataset.l; try{localStorage.setItem("lib_layout",layout);}catch(e){}
+  document.querySelectorAll("#layout button").forEach(x=>x.classList.toggle("on",x===b)); render(); });
+function updateLayoutVis(){ document.getElementById("layout").style.display = (groupBy==="none")?"flex":"none"; }
 document.getElementById("q").addEventListener("input",e=>{ query=e.target.value; render(); });
 document.getElementById("filterbar").addEventListener("click",e=>{ const b=e.target.closest(".chip"); if(!b) return;
   statusFilter=b.dataset.f; document.querySelectorAll("#filterbar .chip").forEach(c=>c.classList.toggle("on",c===b)); render(); });
@@ -1125,6 +1145,17 @@ async function installApp(){
   else { toast("Use your browser's Share → Add to Home Screen"); }
 }
 if("serviceWorker" in navigator){ addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{})); }
+
+/* ---------- restore saved view prefs ---------- */
+(function initPrefs(){
+  document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===view));
+  const gb=document.getElementById("groupby"); if(gb) gb.value=groupBy;
+  const so=document.getElementById("sort"); if(so) so.value=sortBy;
+  document.querySelectorAll("#layout button").forEach(x=>x.classList.toggle("on",x.dataset.l===layout));
+  updateLayoutVis();
+})();
+// auto-pull latest on launch if sync is configured
+if(syncURL()) pullSync(true);
 
 render();
 </script>
