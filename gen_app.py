@@ -443,7 +443,7 @@ function toggleTheme(){ const cur=localStorage.getItem("lib_theme")==="dark"?"":
 applyTheme(localStorage.getItem("lib_theme"));
 
 /* ---------- sync (shared file over tailnet HTTPS; last-write-wins) ---------- */
-const DEFAULT_SYNC = "https://keen-truenas.tailfbd25a.ts.net:8443";  // home TrueNAS (tailnet only)
+const DEFAULT_SYNC = "https://books.retrogaming.win";  // public sync (Cloudflare tunnel -> home TrueNAS)
 const syncURL = () => { let v=localStorage.getItem("lib_sync_url"); if(v===null) v=DEFAULT_SYNC; return (v||"").trim().replace(/\/+$/,""); };
 let _syncT=null, _syncing=false;
 function scheduleSync(){ if(!syncURL()) return; clearTimeout(_syncT); _syncT=setTimeout(pushSync, 1500); }
@@ -1061,7 +1061,7 @@ function openSettings(){
       <div class="efield"><input id="sync_url" value="${esc(syncURL())}" placeholder="https://your-host.ts.net" inputmode="url"></div>
       <button class="imp sec" onclick="saveSyncUrl()">Save endpoint</button>
       <button class="imp sec" onclick="pullSync()">Sync now ↓</button>
-      <div class="hint" style="margin-top:8px">Pre-set to your home <b>TrueNAS</b> — every device on your tailnet shares one library (last edit wins). Changes push automatically; it pulls on launch. The device must be on the tailnet (VPN on) to sync. Clear the box + Save to turn it off.</div>
+      <div class="hint" style="margin-top:8px">Pre-set to the shared library on your home server — every device that opens the app shares one library (last edit wins). Changes push automatically; it pulls on launch. No VPN or app needed. Clear the box + Save to turn it off.</div>
     </div>
 
     <div class="setgrp"><div class="setlab">App</div>
