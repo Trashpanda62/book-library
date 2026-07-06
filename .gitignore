@@ -1,0 +1,4 @@
+library.json
+library_test.json
+*.tmp
+__pycache__/

@@ -294,6 +294,68 @@ main{padding:12px 12px 40px;max-width:820px;margin:0 auto}
   background:var(--sage-dark);color:#fff;padding:11px 18px;border-radius:24px;font-size:13.5px;
   box-shadow:0 6px 20px rgba(0,0,0,.25);transition:transform .25s;max-width:90vw}
 .toast.on{transform:translateX(-50%) translateY(0)}
+
+/* dark mode */
+html[data-theme="dark"]{
+  --paper:#1c1e1b; --card:#26302a; --ink:#ece7dc; --muted:#9aa39a;
+  --sage:#6f8a78; --sage-dark:#9db6a5; --sage-light:#42514a; --line:#33403a;
+  --accent:#d98a5c; --up:#c8a765; --shadow:0 2px 8px rgba(0,0,0,.35);
+}
+html[data-theme="dark"] .tag.m{background:#33403a;color:var(--muted)}
+html[data-theme="dark"] .cover .ph, html[data-theme="dark"] .row .mini .mph{color:#e8e2d5}
+
+/* filter + status chips */
+.filterbar{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 0 0}
+.filterbar::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;font-size:12px;font-weight:600;padding:5px 11px;border-radius:20px;
+  background:rgba(255,255,255,.14);color:#fff;white-space:nowrap;border:none}
+.chip.on{background:var(--card);color:var(--sage-dark)}
+.statusdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.sd-read{background:var(--sage)} .sd-reading{background:var(--accent)} .sd-toread{background:var(--up)}
+.covtag{position:absolute;bottom:6px;left:6px;background:rgba(43,43,40,.82);color:#fff;font-size:9px;
+  font-weight:700;padding:2px 6px;border-radius:20px}
+.covtag.reading{background:var(--accent)} .covtag.read{background:var(--sage)}
+
+/* stars */
+.stars{display:flex;gap:3px;font-size:24px;line-height:1;color:var(--line)}
+.stars span{cursor:pointer;color:var(--line)}
+.stars span.lit{color:var(--up)}
+.ministars{color:var(--up);font-size:12px;letter-spacing:1px}
+
+/* status segmented in detail */
+.seg{display:flex;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:6px}
+.seg button{flex:1;padding:9px 4px;font-size:12.5px;font-weight:600;color:var(--muted);background:var(--card)}
+.seg button.on{background:var(--sage);color:#fff}
+
+/* stats */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.statcard{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:13px 14px;box-shadow:var(--shadow)}
+.statcard .num{font-size:26px;font-weight:800;color:var(--sage-dark)}
+.statcard .lab{font-size:12px;color:var(--muted);margin-top:2px}
+.statsect{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow)}
+.statsect h4{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--sage-dark)}
+.brow{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:12.5px}
+.brow .bl{width:38%;flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.brow .bt{flex:1;height:9px;background:var(--line);border-radius:6px;overflow:hidden}
+.brow .bt i{display:block;height:100%;background:var(--sage);border-radius:6px}
+.brow .bn{flex:none;color:var(--muted);width:26px;text-align:right;font-weight:600}
+
+/* edit form */
+.efield{margin-bottom:10px}
+.efield label{display:block;font-size:11px;font-weight:700;color:var(--sage-dark);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.efield input,.efield textarea,.efield select{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;
+  font-size:14px;background:var(--card);color:var(--ink);font-family:inherit}
+.efield textarea{min-height:64px;resize:vertical}
+.danger{background:#fff;color:#b5433a;border:1px solid #e3b7b2}
+html[data-theme="dark"] .danger{background:var(--card)}
+.editbtn{position:absolute;top:10px;right:14px;font-size:13px;font-weight:700;color:var(--sage);background:var(--card);
+  border:1px solid var(--line);border-radius:20px;padding:5px 12px}
+.scanwrap{position:relative;background:#000;border-radius:12px;overflow:hidden;aspect-ratio:4/3;margin:10px 0}
+.scanwrap video{width:100%;height:100%;object-fit:cover}
+.scanline{position:absolute;left:8%;right:8%;top:50%;height:2px;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+.setgrp{margin-top:16px}
+.setlab{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:2px}
+.setgrp .imp{margin-top:8px}
 </style>
 </head>
 <body>
@@ -313,6 +375,7 @@ main{padding:12px 12px 40px;max-width:820px;margin:0 auto}
     <button data-v="authors">Authors</button>
     <button data-v="genres">Genres</button>
     <button data-v="wishlist">Wishlist</button>
+    <button data-v="stats">Stats</button>
   </div>
   <div class="sortbar" id="sortbar">
     <span>Sort</span>
@@ -321,8 +384,17 @@ main{padding:12px 12px 40px;max-width:820px;margin:0 auto}
       <option value="title">Title A–Z</option>
       <option value="year_new">Year (newest)</option>
       <option value="year_old">Year (oldest)</option>
+      <option value="added">Recently added</option>
+      <option value="rating">My rating</option>
     </select>
     <span id="viewnote" style="margin-left:auto;opacity:.85"></span>
+  </div>
+  <div class="filterbar" id="filterbar">
+    <button class="chip on" data-f="">All</button>
+    <button class="chip" data-f="toread">To-read</button>
+    <button class="chip" data-f="reading">Reading</button>
+    <button class="chip" data-f="read">Read</button>
+    <button class="chip" data-f="rated">Rated ★</button>
   </div>
 </header>
 
@@ -340,19 +412,58 @@ const STORES = /*STORES*/;
 
 /* ---------- state ---------- */
 let books = load();
-let view = "covers", sortBy = "author", query = "";
+let view = "covers", sortBy = "author", query = "", statusFilter = "";
 const norm = s => (s||"").toLowerCase().replace(/^(the|a|an) /,"").replace(/[^a-z0-9]+/g," ").trim();
 const enc = s => encodeURIComponent(s);
+const nextId = () => (books.reduce((m,b)=>Math.max(m, +b.id||0), 0) + 1);
 
 function load(){
   try{ const s = localStorage.getItem("lib_books"); if(s) return JSON.parse(s); }catch(e){}
   return CATALOG.map(b=>({...b}));
 }
-function persist(){ try{ localStorage.setItem("lib_books", JSON.stringify(books)); }catch(e){} }
+function persist(){ try{ localStorage.setItem("lib_books", JSON.stringify(books)); }catch(e){} scheduleSync(); }
+
+/* ---------- theme ---------- */
+function applyTheme(t){ if(t==="dark"){ document.documentElement.setAttribute("data-theme","dark"); document.querySelector('meta[name=theme-color]').setAttribute("content","#26302a"); } else { document.documentElement.removeAttribute("data-theme"); document.querySelector('meta[name=theme-color]').setAttribute("content","#5b7263"); } }
+function toggleTheme(){ const cur=localStorage.getItem("lib_theme")==="dark"?"":"dark"; localStorage.setItem("lib_theme",cur); applyTheme(cur); closeSheet(); }
+applyTheme(localStorage.getItem("lib_theme"));
+
+/* ---------- sync (shared file over tailnet HTTPS; last-write-wins) ---------- */
+const syncURL = () => (localStorage.getItem("lib_sync_url")||"").trim().replace(/\/+$/,"");
+let _syncT=null, _syncing=false;
+function scheduleSync(){ if(!syncURL()) return; clearTimeout(_syncT); _syncT=setTimeout(pushSync, 1500); }
+async function pushSync(silent){
+  const url=syncURL(); if(!url) return;
+  const payload={ updated:Date.now(), books, wishlist };
+  try{
+    await fetch(url+"/library", {method:"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload)});
+    localStorage.setItem("lib_sync_at", String(payload.updated));
+    if(!silent) toast("Synced ↑");
+  }catch(e){ if(!silent) toast("Sync failed — endpoint offline"); }
+}
+async function pullSync(silent){
+  const url=syncURL(); if(!url){ if(!silent) toast("Set a sync endpoint first"); return; }
+  try{
+    const r=await fetch(url+"/library",{cache:"no-store"}); if(!r.ok) throw 0;
+    const d=await r.json();
+    const localAt=+(localStorage.getItem("lib_sync_at")||0);
+    if(d && d.updated && d.updated>localAt && Array.isArray(d.books)){
+      books=d.books; wishlist=d.wishlist||[];
+      localStorage.setItem("lib_books",JSON.stringify(books));
+      localStorage.setItem("lib_wishlist",JSON.stringify(wishlist));
+      localStorage.setItem("lib_sync_at",String(d.updated));
+      render(); if(!silent) toast("Pulled latest ↓");
+    } else if(!silent) toast("Already up to date");
+  }catch(e){ if(!silent) toast("Sync failed — endpoint offline"); }
+}
 
 /* ---------- wishlist ---------- */
 let wishlist = (()=>{ try{ return JSON.parse(localStorage.getItem("lib_wishlist")||"[]"); }catch(e){ return []; } })();
-function saveWish(){ try{ localStorage.setItem("lib_wishlist", JSON.stringify(wishlist)); }catch(e){} }
+function saveWish(){ try{ localStorage.setItem("lib_wishlist", JSON.stringify(wishlist)); }catch(e){} scheduleSync(); }
+function gotIt(key){ const w=wishlist.find(x=>x.key===key); if(!w) return;
+  books.push({ id:nextId(), title:w.title, author:w.author, genre:w.genre||"Uncategorized", year:w.year||"", shelf:"Added", series:w.series||"", placeholder:false, isbn:w.isbn||"", cover:w.cover||"", status:"toread", rating:0, notes:"", added:Date.now() });
+  removeWish(key); persist(); }
+function toggleWishPriority(key){ const w=wishlist.find(x=>x.key===key); if(w){ w.priority=!w.priority; saveWish(); render(); } }
 const wkey = (title,author)=> norm(title)+"|"+norm(author||"");
 function isWished(title,author){ return wishlist.some(w=>w.key===wkey(title,author)); }
 function ownedAlready(title){ return books.some(b=>!b.placeholder && norm(b.title)===norm(title)); }
@@ -453,27 +564,40 @@ function topGenre(g){
   if(/cook|homestead|garden|veterin|blacksmith|science|nature|reference|craft|survival|preserv/.test(s)) return "Home & Reference";
   return "Fiction & Literature";
 }
+function matchesFilter(b){
+  if(!statusFilter) return true;
+  if(statusFilter==="rated") return (b.rating||0)>0;
+  return (b.status||"")===statusFilter;
+}
 function filtered(){
   const q = norm(query);
-  let a = books.filter(b=> !q || norm(b.title).includes(q)||norm(b.author).includes(q)||norm(b.series).includes(q)||norm(b.genre).includes(q));
+  let a = books.filter(b=> matchesFilter(b) && (!q || norm(b.title).includes(q)||norm(b.author).includes(q)||norm(b.series).includes(q)||norm(b.genre).includes(q)||(b.isbn&&b.isbn.includes(query.trim()))));
   const lastName = s => { const p=(s||"").trim().split(" "); return p[p.length-1]||""; };
   a.sort((x,y)=>{
     if(sortBy==="title") return norm(x.title).localeCompare(norm(y.title));
     if(sortBy==="year_new") return (parseInt(y.year)||-9999)-(parseInt(x.year)||-9999);
     if(sortBy==="year_old") return (parseInt(x.year)||9999)-(parseInt(y.year)||9999);
+    if(sortBy==="added") return (y.added||0)-(x.added||0);
+    if(sortBy==="rating") return (y.rating||0)-(x.rating||0) || norm(x.title).localeCompare(norm(y.title));
     return norm(lastName(x.author)+" "+x.title).localeCompare(norm(lastName(y.author)+" "+y.title));
   });
   return a;
 }
+const STATUS_LABEL={toread:"To-read",reading:"Reading",read:"Read"};
+function statusBadge(b){ const s=b.status; if(!s||!STATUS_LABEL[s]) return ""; return `<span class="covtag ${s}">${s==="reading"?"Reading":s==="read"?"Read":"To-read"}</span>`; }
+function ministars(n){ n=n||0; return n?`<span class="ministars">${"★".repeat(n)}${"☆".repeat(5-n)}</span>`:""; }
 
 /* ---------- views ---------- */
 function render(){
   document.getElementById("count").textContent = books.length+" books";
-  document.getElementById("sortbar").style.display = (view==="series"||view==="wishlist")?"none":"flex";
+  const hideExtras = (view==="series"||view==="wishlist"||view==="stats");
+  document.getElementById("sortbar").style.display = hideExtras?"none":"flex";
+  document.getElementById("filterbar").style.display = hideExtras?"none":"flex";
   const m = document.getElementById("main");
   if(view==="wishlist"){ renderWishlist(m); wireCovers(m); return; }
+  if(view==="stats"){ renderStats(m); return; }
   const data = filtered();
-  if(!data.length){ m.innerHTML = `<div class="empty">No books match “${esc(query)}”.</div>`; return; }
+  if(!data.length){ m.innerHTML = `<div class="empty">No books ${statusFilter?"in this shelf":"match"}${query?` “${esc(query)}”`:""}.</div>`; return; }
   if(view==="covers") renderCovers(m,data);
   else if(view==="list") renderList(m,data);
   else if(view==="series") renderSeries(m);
@@ -484,7 +608,8 @@ function render(){
 function renderWishlist(m){
   document.getElementById("viewnote").textContent = wishlist.length+" to get";
   const q=norm(query);
-  const items = wishlist.filter(w=>!q||norm(w.title).includes(q)||norm(w.author).includes(q)||norm(w.series).includes(q));
+  const items = wishlist.filter(w=>!q||norm(w.title).includes(q)||norm(w.author).includes(q)||norm(w.series).includes(q))
+    .sort((a,b)=> (b.priority?1:0)-(a.priority?1:0) || (a.status==="upcoming"?1:0)-(b.status==="upcoming"?1:0) || norm(a.title).localeCompare(norm(b.title)));
   const addBar = `<button class="imp" style="margin:0 0 12px" onclick="openAddWish()">＋ Add a book to the wishlist</button>`;
   if(!wishlist.length){
     m.innerHTML = addBar + `<div class="empty">Your wishlist is empty.<br><span style="font-size:12.5px">Open the <b>Series</b> tab and tap any book you're missing or an upcoming release to add it here — or use the button above.</span></div>`;
@@ -496,7 +621,7 @@ function renderWishlist(m){
     const sub = [w.author, up?("Releases "+(w.release_date||"TBA")):w.year, w.series?(esc(w.series)+(w.index?(" #"+w.index):"")):""].filter(Boolean).join(" · ");
     return `<div class="row lg wishrow" onclick="openWish('${esc(w.key)}')">
       <div class="mini" data-id="${esc(w.id)}"><div class="mph">${esc(w.title)}</div></div>
-      <div class="rmain"><div class="rt">${esc(w.title)}${up?' <span class="curtag" style="color:var(--up)">upcoming</span>':""}${owned?' <span class="curtag">✓ own it now</span>':""}</div><div class="rs">${sub}</div></div>
+      <div class="rmain"><div class="rt">${w.priority?'★ ':''}${esc(w.title)}${up?' <span class="curtag" style="color:var(--up)">upcoming</span>':""}${owned?' <span class="curtag">✓ own it now</span>':""}</div><div class="rs">${sub}</div></div>
       <button class="wremove" onclick="event.stopPropagation();removeWish('${esc(w.key)}');render();" aria-label="Remove">♥</button>
     </div>`;
   }).join("");
@@ -508,9 +633,10 @@ function renderList(m,data){
   m.innerHTML = `<div class="group open"><div class="glist">`+data.map(b=>{
     let sTag = "";
     if(b.series){ const s=seriesMatch(b.series); sTag = s.placeholder?` · <span class="lser">${esc(b.series)}</span>`:` · <span class="lser">${esc(b.series)} (${s.haveCount}/${s.total})</span>`; }
+    const st = b.status&&STATUS_LABEL[b.status]?`<span class="statusdot sd-${b.status}"></span>`:"";
     return `<div class="row lg" onclick="openBook(${b.id})">
       <div class="mini" data-id="${b.id}"><div class="mph">${esc(b.title)}</div></div>
-      <div class="rmain"><div class="rt">${esc(b.title)}</div><div class="rs">${esc(b.author)}${b.year?" · "+b.year:""}${sTag}</div></div>
+      <div class="rmain"><div class="rt">${esc(b.title)} ${ministars(b.rating)}</div><div class="rs">${st}${esc(b.author)}${b.year?" · "+b.year:""}${sTag}</div></div>
     </div>`;
   }).join("")+`</div></div>`;
 }
@@ -519,10 +645,10 @@ function renderCovers(m,data){
   document.getElementById("viewnote").textContent = data.length+" shown";
   m.innerHTML = `<div class="grid">`+data.map(b=>`
     <button class="bcard" onclick="openBook(${b.id})">
-      <div class="cover">${b.placeholder?'<span class="badge multi">series</span>':(b.series?'<span class="badge">series</span>':'')}
+      <div class="cover">${b.placeholder?'<span class="badge multi">series</span>':(b.series?'<span class="badge">series</span>':'')}${statusBadge(b)}
         <div class="ph" ${''}></div>
       </div>
-      <div class="binfo"><div class="bt">${esc(b.title)}</div><div class="ba">${esc(b.author)}</div></div>
+      <div class="binfo"><div class="bt">${esc(b.title)}</div><div class="ba">${esc(b.author)}${b.rating?` ${ministars(b.rating)}`:""}</div></div>
     </button>`).join("")+`</div>`;
   // inject cover placeholders with data-id
   m.querySelectorAll(".bcard").forEach((c,i)=>{ const b=data[i];
@@ -650,7 +776,15 @@ function openBook(id){
       ${head}
       <div class="entries" style="margin-top:10px">${seriesEntriesHTML(s, b.id)}</div></div>`;
   }
+  const st=b.status||"";
+  const statusSeg=`<div class="seg">
+    <button class="${st==='toread'?'on':''}" onclick="setStatus(${b.id},'toread')">To-read</button>
+    <button class="${st==='reading'?'on':''}" onclick="setStatus(${b.id},'reading')">Reading</button>
+    <button class="${st==='read'?'on':''}" onclick="setStatus(${b.id},'read')">Read</button>
+  </div>`;
+  const stars=`<div class="stars" id="dstars">${[1,2,3,4,5].map(n=>`<span class="${(b.rating||0)>=n?'lit':''}" onclick="setRating(${b.id},${n})">★</span>`).join("")}</div>`;
   document.getElementById("sheetbody").innerHTML=`
+    <button class="editbtn" onclick="openEdit(${b.id})">Edit</button>
     <div class="dtop">
       <div class="dcover" data-id="${b.id}" id="dcover"><div class="ph mph" style="font-size:11px;padding:8px;text-align:center">${esc(b.title)}</div></div>
       <div class="dmeta">
@@ -660,6 +794,7 @@ function openBook(id){
       </div>
     </div>
     ${b.notes?`<div class="dnotes">${esc(b.notes)}</div>`:""}
+    <div class="sect"><h4>Reading status</h4>${statusSeg}<div style="margin-top:12px">${stars}</div></div>
     ${seriesBlock}
     <div class="sect"><h4>Local to Livingston, TN</h4><div class="btns">${bl.local}</div></div>
     <div class="sect"><h4>Buy online</h4><div class="btns">${bl.online}</div></div>`;
@@ -688,10 +823,176 @@ function openWish(key){
     </div>
     <div class="sect"><h4>Local to Livingston, TN</h4><div class="btns">${bl.local}</div></div>
     <div class="sect"><h4>Buy online</h4><div class="btns">${bl.online}</div></div>
-    <div class="sect"><button class="imp sec" onclick="removeWish('${esc(w.key)}');closeSheet();render();toast('Removed from wishlist');">♥ Remove from wishlist</button></div>`;
+    <div class="sect">
+      ${owned?"":`<button class="imp" onclick="gotIt('${esc(w.key)}');closeSheet();view='covers';setTab('covers');toast('Moved to your library ✓');">✓ I got this — move to Library</button>`}
+      <button class="imp sec" onclick="toggleWishPriority('${esc(w.key)}')">${w.priority?"★ Priority (tap to unstar)":"☆ Mark as priority"}</button>
+      <button class="imp sec danger" onclick="removeWish('${esc(w.key)}');closeSheet();render();toast('Removed from wishlist');">Remove from wishlist</button>
+    </div>`;
   const dc=document.getElementById("dcover");
   resolveCover(w).then(url=>{ if(url){ const img=new Image(); img.onload=()=>{dc.querySelector(".mph").style.display="none";dc.insertBefore(img,dc.firstChild);}; img.src=url; } });
   openSheet();
+}
+
+/* ---------- reading status / rating / edit / add / delete ---------- */
+function setStatus(id,val){ const b=books.find(x=>x.id==id); if(!b) return; b.status=(b.status===val?"":val); if(!b.added)b.added=Date.now(); persist(); render(); openBook(id); }
+function setRating(id,n){ const b=books.find(x=>x.id==id); if(!b) return; b.rating=(b.rating===n?0:n); persist(); render(); openBook(id); }
+function openEdit(id){
+  const b=books.find(x=>x.id==id); if(!b) return;
+  document.getElementById("sheetbody").innerHTML=`<div class="panel">
+    <h3>Edit book</h3>
+    <div class="efield"><label>Title</label><input id="e_title" value="${esc(b.title)}"></div>
+    <div class="efield"><label>Author</label><input id="e_author" value="${esc(b.author)}"></div>
+    <div class="efield"><label>Genre</label><input id="e_genre" value="${esc(b.genre)}"></div>
+    <div class="efield"><label>Year</label><input id="e_year" value="${esc(b.year)}"></div>
+    <div class="efield"><label>Series (optional)</label><input id="e_series" value="${esc(b.series||"")}"></div>
+    <div class="efield"><label>Shelf / location</label><input id="e_shelf" value="${esc(b.shelf||"")}"></div>
+    <div class="efield"><label>Cover image URL (paste to override)</label><input id="e_cover" value="${esc(b.cover||"")}" placeholder="https://..."></div>
+    <div class="efield"><label>Notes</label><textarea id="e_notes">${esc(b.notes||"")}</textarea></div>
+    <button class="imp" onclick="saveEdit(${id})">Save changes</button>
+    <button class="imp sec danger" onclick="deleteBook(${id})">Delete this book</button>
+  </div>`;
+  openSheet();
+}
+function saveEdit(id){
+  const b=books.find(x=>x.id==id); if(!b) return;
+  const g=v=>document.getElementById(v).value.trim();
+  b.title=g("e_title")||b.title; b.author=g("e_author"); b.genre=g("e_genre")||"Uncategorized";
+  b.year=g("e_year"); b.series=g("e_series"); b.shelf=g("e_shelf"); b.notes=g("e_notes");
+  const cov=g("e_cover"); if(cov!==(b.cover||"")){ b.cover=cov; delete coverCache[ckey(b)]; }
+  b.placeholder=false; persist(); closeSheet(); render(); toast("Saved");
+}
+function deleteBook(id){
+  const b=books.find(x=>x.id==id); if(!b) return;
+  if(!confirm("Delete “"+b.title+"” from your library?")) return;
+  books=books.filter(x=>x.id!=id); persist(); closeSheet(); render(); toast("Deleted");
+}
+function openAddBook(){
+  document.getElementById("sheetbody").innerHTML=`<div class="panel">
+    <h3>Add a book to your library</h3>
+    <p style="font-size:12.5px;color:var(--muted);margin:4px 0 10px">Cover fills in automatically. To add by barcode, use “Scan a book”.</p>
+    <div class="efield"><label>Title</label><input id="a_title" placeholder="Title"></div>
+    <div class="efield"><label>Author</label><input id="a_author" placeholder="Author"></div>
+    <div class="efield"><label>Genre (optional)</label><input id="a_genre" placeholder="e.g. Historical Fiction"></div>
+    <div class="efield"><label>Year (optional)</label><input id="a_year" placeholder="e.g. 2021"></div>
+    <button class="imp" onclick="submitAddBook()">Add to library</button>
+  </div>`;
+  openSheet(); setTimeout(()=>document.getElementById("a_title")&&document.getElementById("a_title").focus(),220);
+}
+function submitAddBook(){
+  const g=v=>document.getElementById(v).value.trim();
+  const t=g("a_title"); if(!t){ toast("Enter a title"); return; }
+  books.push({ id:nextId(), title:t, author:g("a_author"), genre:g("a_genre")||"Uncategorized", year:g("a_year"), shelf:"Added", series:"", placeholder:false, isbn:"", cover:"", status:"toread", rating:0, notes:"", added:Date.now() });
+  persist(); closeSheet(); view="covers"; setTab("covers"); toast("Added to library");
+}
+
+/* ---------- add-by-ISBN / barcode scan ---------- */
+async function isbnLookup(isbn){
+  isbn=(isbn||"").replace(/[^0-9Xx]/g,"");
+  if(isbn.length<10){ return null; }
+  try{
+    const r=await fetch("https://www.googleapis.com/books/v1/volumes?country=US&q=isbn:"+isbn);
+    const j=await r.json(); const vi=(j.items&&j.items[0]&&j.items[0].volumeInfo)||null;
+    if(vi){ const il=vi.imageLinks||{}; let cov=(il.thumbnail||il.smallThumbnail||"");
+      cov=cov.replace("http://","https://").replace("&edge=curl","").replace(/zoom=\d/,"zoom=1");
+      return { title:vi.title||"", author:(vi.authors||[]).join(", "), year:(vi.publishedDate||"").slice(0,4),
+        genre:(vi.categories||["Uncategorized"])[0], isbn, cover:cov }; }
+  }catch(e){}
+  // fallback Open Library
+  try{
+    const r=await fetch("https://openlibrary.org/api/books?format=json&jscmd=data&bibkeys=ISBN:"+isbn);
+    const j=await r.json(); const d=j["ISBN:"+isbn];
+    if(d) return { title:d.title||"", author:(d.authors||[]).map(a=>a.name).join(", "), year:(d.publish_date||"").match(/\d{4}/)?.[0]||"", genre:"Uncategorized", isbn, cover:(d.cover&&(d.cover.medium||d.cover.large))||"" };
+  }catch(e){}
+  return null;
+}
+async function addByIsbn(isbn, toWishlist){
+  toast("Looking up…");
+  const info=await isbnLookup(isbn);
+  if(!info||!info.title){ toast("No match for that ISBN"); return; }
+  if(toWishlist){ addWish({title:info.title, author:info.author, isbn:info.isbn, cover:info.cover, year:info.year}); toast("Added to wishlist ♥"); }
+  else { books.push({ id:nextId(), ...info, shelf:"Scanned", series:"", placeholder:false, status:"toread", rating:0, notes:"", added:Date.now() }); persist(); toast("Added: "+info.title); }
+}
+let _scanStream=null, _scanRun=false;
+async function openScan(){
+  const hasDetector = ("BarcodeDetector" in window);
+  document.getElementById("sheetbody").innerHTML=`<div class="panel">
+    <h3>Scan or enter an ISBN</h3>
+    ${hasDetector?`<p style="font-size:12.5px;color:var(--muted);margin:4px 0 0">Point the camera at the barcode on the back of the book.</p>
+      <div class="scanwrap"><video id="scanvid" playsinline muted></video><div class="scanline"></div></div>`:
+      `<p style="font-size:12.5px;color:var(--muted);margin:4px 0 6px">Live scanning isn't supported in this browser (common on iPhone). Type the 13-digit ISBN from the barcode instead.</p>`}
+    <div class="efield"><label>ISBN</label><input id="isbn_in" inputmode="numeric" placeholder="9780316206877"></div>
+    <button class="imp" onclick="submitIsbn(false)">Add to library</button>
+    <button class="imp sec" onclick="submitIsbn(true)">Add to wishlist instead</button>
+  </div>`;
+  openSheet();
+  if(hasDetector) startScanner();
+}
+async function startScanner(){
+  try{
+    const det=new BarcodeDetector({formats:["ean_13","ean_8","upc_a"]});
+    _scanStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
+    const v=document.getElementById("scanvid"); if(!v){ stopScanner(); return; }
+    v.srcObject=_scanStream; await v.play(); _scanRun=true;
+    const loop=async()=>{
+      if(!_scanRun||!document.getElementById("scanvid")) return;
+      try{ const codes=await det.detect(v); const hit=codes.find(c=>/^(978|979|97)/.test(c.rawValue)||c.rawValue.length>=12);
+        if(hit){ const isbn=hit.rawValue; stopScanner(); closeSheet(); addByIsbn(isbn,false); return; } }catch(e){}
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+  }catch(e){ /* permission denied -> manual entry still works */ }
+}
+function stopScanner(){ _scanRun=false; if(_scanStream){ _scanStream.getTracks().forEach(t=>t.stop()); _scanStream=null; } }
+function submitIsbn(toWish){ const v=(document.getElementById("isbn_in").value||"").trim(); if(!v){ toast("Enter an ISBN"); return; } stopScanner(); closeSheet(); addByIsbn(v,toWish); }
+
+/* ---------- backup / export ---------- */
+function download(name, text, type){ const b=new Blob([text],{type:type||"application/json"}); const u=URL.createObjectURL(b);
+  const a=document.createElement("a"); a.href=u; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),1000); }
+function stamp(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function backupJSON(){ download("our-library-backup-"+stamp()+".json", JSON.stringify({version:2, exported:Date.now(), books, wishlist}, null, 1)); toast("Backup downloaded"); }
+function restoreJSON(e){ const f=e.target.files[0]; if(!f) return; const rd=new FileReader();
+  rd.onload=()=>{ try{ const d=JSON.parse(rd.result); if(!Array.isArray(d.books)) throw 0;
+    books=d.books; wishlist=d.wishlist||[]; persist(); saveWish(); closeSheet(); view="covers"; setTab("covers"); toast("Restored "+books.length+" books"); }
+    catch(_){ toast("That isn't a valid backup file"); } };
+  rd.readAsText(f); }
+function csvCell(s){ s=(s==null?"":String(s)); return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; }
+function exportCSV(){
+  const cols=["title","author","genre","year","series","shelf","isbn","status","rating","notes"];
+  const rows=[cols.join(",")].concat(books.map(b=>cols.map(c=>csvCell(b[c])).join(",")));
+  download("our-library-"+stamp()+".csv", rows.join("\n"), "text/csv"); toast("CSV exported");
+}
+
+/* ---------- stats ---------- */
+function renderStats(m){
+  document.getElementById("viewnote").textContent="";
+  const owned=books.length;
+  const read=books.filter(b=>b.status==="read").length;
+  const reading=books.filter(b=>b.status==="reading").length;
+  const toread=books.filter(b=>b.status==="toread").length;
+  const rated=books.filter(b=>b.rating>0);
+  const avg=rated.length?(rated.reduce((s,b)=>s+b.rating,0)/rated.length).toFixed(1):"—";
+  const years=books.map(b=>parseInt(b.year)).filter(y=>y>0);
+  const gcount={}; books.forEach(b=>{ const g=topGenre(b.genre); gcount[g]=(gcount[g]||0)+1; });
+  const gtop=Object.entries(gcount).sort((a,b)=>b[1]-a[1]);
+  const gmax=Math.max(1,...gtop.map(x=>x[1]));
+  const acount={}; books.forEach(b=>{ if(b.author&&!b.placeholder){ acount[b.author]=(acount[b.author]||0)+1; } });
+  const atop=Object.entries(acount).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const amax=Math.max(1,...atop.map(x=>x[1]));
+  const seriesNames=[...new Set(books.filter(b=>b.series).map(b=>b.series))];
+  let sOwned=0,sTotal=0; seriesNames.forEach(n=>{ const s=seriesMatch(n); if(s.db&&!s.placeholder){ sOwned+=s.haveCount; sTotal+=s.total; } });
+  const bar=(label,val,max)=>`<div class="brow"><span class="bl">${esc(label)}</span><span class="bt"><i style="width:${Math.round(100*val/max)}%"></i></span><span class="bn">${val}</span></div>`;
+  m.innerHTML=`
+    <div class="stat-grid">
+      <div class="statcard"><div class="num">${owned}</div><div class="lab">books in library</div></div>
+      <div class="statcard"><div class="num">${wishlist.length}</div><div class="lab">on the wishlist</div></div>
+      <div class="statcard"><div class="num">${read}</div><div class="lab">read</div></div>
+      <div class="statcard"><div class="num">${reading||toread}</div><div class="lab">${reading?"currently reading":"to read"}</div></div>
+      <div class="statcard"><div class="num">${avg}</div><div class="lab">avg rating (${rated.length} rated)</div></div>
+      <div class="statcard"><div class="num">${years.length?Math.min(...years)+"–"+Math.max(...years):"—"}</div><div class="lab">year range</div></div>
+    </div>
+    ${sTotal?`<div class="statsect"><h4>Series completion</h4>${bar(sOwned+" of "+sTotal+" across "+seriesNames.length+" series", sOwned, sTotal)}</div>`:""}
+    <div class="statsect"><h4>By genre</h4>${gtop.map(([g,n])=>bar(g,n,gmax)).join("")}</div>
+    <div class="statsect"><h4>Top authors</h4>${atop.map(([a,n])=>bar(a,n,amax)).join("")}</div>`;
 }
 function openAddWish(){
   document.getElementById("sheetbody").innerHTML=`<div class="panel">
@@ -715,23 +1016,46 @@ function submitAddWish(){
 
 /* ---------- settings / import ---------- */
 function openSettings(){
+  const dark=localStorage.getItem("lib_theme")==="dark";
+  const surl=localStorage.getItem("lib_sync_url")||"";
   document.getElementById("sheetbody").innerHTML=`<div class="panel">
     <h3>Library settings</h3>
-    <p style="font-size:13px;color:var(--muted);margin:4px 0 0">${books.length} books · ${Object.keys(SERIES_DB).length} series tracked</p>
-    <label class="imp" for="csv">Import from Libib (CSV)</label>
-    <input id="csv" type="file" accept=".csv,text/csv" style="display:none">
-    <button class="imp sec" onclick="installApp()">Install app on this device</button>
-    <button class="imp sec" onclick="resetLib()">Reset to sample library</button>
-    <div class="hint"><b>Export from Libib</b> — this only works on the <b>website</b>, not the phone app (the app is for scanning books in, not exporting):
-      <ol><li>Go to <b>libib.com</b> in a browser and sign in (on a phone, turn on "Desktop site")</li>
-      <li>Top-right <b>account menu → Settings</b></li>
-      <li>Open the <b>Libraries</b> tab → <b>Export Library (.csv)</b> → pick the library</li>
-      <li>Save the .csv, then come back here → <b>Import from Libib</b> → pick that file</li></ol>
-      Covers, genres and series fill in automatically from the ISBNs in the file.</div>
+    <p style="font-size:13px;color:var(--muted);margin:4px 0 0">${books.length} books · ${wishlist.length} wishlist · ${Object.keys(SERIES_DB).length} series tracked</p>
+
+    <div class="setgrp"><div class="setlab">Add books</div>
+      <button class="imp" onclick="openScan()">📷 Scan a book (ISBN)</button>
+      <button class="imp sec" onclick="openAddBook()">Add a book by title</button>
+      <label class="imp sec" for="csv">Import from Libib (CSV)</label>
+      <input id="csv" type="file" accept=".csv,text/csv" style="display:none">
+    </div>
+
+    <div class="setgrp"><div class="setlab">Backup & data</div>
+      <button class="imp sec" onclick="backupJSON()">⬇ Download backup (.json)</button>
+      <label class="imp sec" for="restore">⬆ Restore from backup</label>
+      <input id="restore" type="file" accept=".json,application/json" style="display:none">
+      <button class="imp sec" onclick="exportCSV()">Export library as CSV</button>
+    </div>
+
+    <div class="setgrp"><div class="setlab">Sync across devices (tailnet)</div>
+      <div class="efield"><input id="sync_url" value="${esc(surl)}" placeholder="https://your-host.ts.net" inputmode="url"></div>
+      <button class="imp sec" onclick="saveSyncUrl()">Save endpoint</button>
+      <button class="imp sec" onclick="pullSync()">Sync now ↓</button>
+      <div class="hint" style="margin-top:8px">Point both phones at the same tailnet endpoint and they share one library (last edit wins). Setup is in the repo's <b>SYNC.md</b>.</div>
+    </div>
+
+    <div class="setgrp"><div class="setlab">App</div>
+      <button class="imp sec" onclick="toggleTheme()">${dark?"☀ Light mode":"🌙 Dark mode"}</button>
+      <button class="imp sec" onclick="installApp()">Install app on this device</button>
+      <button class="imp sec danger" onclick="resetLib()">Reset to sample library</button>
+    </div>
+
+    <div class="hint"><b>Export from Libib</b> is website-only (not the phone app): <b>libib.com</b> → sign in → account menu → <b>Settings</b> → <b>Libraries</b> tab → <b>Export Library (.csv)</b>. Then come back here → <b>Import from Libib</b>.</div>
   </div>`;
   document.getElementById("csv").addEventListener("change", handleCSV);
+  document.getElementById("restore").addEventListener("change", restoreJSON);
   openSheet();
 }
+function saveSyncUrl(){ const v=(document.getElementById("sync_url").value||"").trim(); localStorage.setItem("lib_sync_url",v); toast(v?"Sync endpoint saved":"Sync turned off"); if(v) pullSync(true); }
 function resetLib(){ localStorage.removeItem("lib_books"); books=CATALOG.map(b=>({...b})); persist(); closeSheet(); render(); toast("Reset to sample library"); }
 
 function parseCSV(text){
@@ -786,8 +1110,10 @@ function setTab(v){ view=v; document.querySelectorAll("#tabs button").forEach(b=
 document.getElementById("tabs").addEventListener("click",e=>{ const b=e.target.closest("button"); if(b) setTab(b.dataset.v); });
 document.getElementById("sort").addEventListener("change",e=>{ sortBy=e.target.value; render(); });
 document.getElementById("q").addEventListener("input",e=>{ query=e.target.value; render(); });
+document.getElementById("filterbar").addEventListener("click",e=>{ const b=e.target.closest(".chip"); if(!b) return;
+  statusFilter=b.dataset.f; document.querySelectorAll("#filterbar .chip").forEach(c=>c.classList.toggle("on",c===b)); render(); });
 document.getElementById("gear").addEventListener("click",openSettings);
-document.getElementById("scrim").addEventListener("click",closeSheet);
+document.getElementById("scrim").addEventListener("click",()=>{ stopScanner(); closeSheet(); });
 document.addEventListener("click",e=>{ const w=e.target.closest("[data-wishadd]"); if(w){ e.stopPropagation(); toggleWishEntry(w.dataset.series, w.dataset.title); } });
 let toastT; function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.classList.add("on"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("on"),2600); }
 
