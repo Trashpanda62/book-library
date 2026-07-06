@@ -394,7 +394,7 @@ html[data-theme="dark"] .danger{background:var(--card)}
 #reader .rbtn{border:0;background:transparent;font-size:16px;font-weight:700;padding:8px 11px;cursor:pointer;color:var(--ink);border-radius:9px;line-height:1}
 #reader .rbtn:active{background:var(--line)}
 #reader .rview{flex:1;position:relative;overflow:hidden}
-#reader .rnav{position:absolute;top:0;bottom:0;width:26%;z-index:3}
+#reader .rnav{position:absolute;top:0;bottom:0;width:26%;z-index:6}
 #reader .rnav.prev{left:0}
 #reader .rnav.next{right:0}
 #reader .rload{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;z-index:1}
@@ -578,14 +578,33 @@ function openReader(eid,title){
       _rendition.themes.select("clean");
       _rendition.themes.fontSize(fs+"%");
       const pos=localStorage.getItem("lib_pos_"+eid);
+      // Tap-to-turn from INSIDE the chapter iframe (epub.js draws its iframe above the
+      // outer tap-zones, so those never receive touches). Left 30% = prev, right 30% = next.
+      _rendition.hooks.content.register(contents=>{
+        try{
+          const doc=contents.document, win=contents.window;
+          doc.documentElement.style.webkitTouchCallout="none";
+          doc.addEventListener("click",ev=>{
+            const w=win.innerWidth||doc.documentElement.clientWidth||360;
+            const x=ev.clientX;
+            if(x < w*0.30){ readerNav(-1); } else if(x > w*0.70){ readerNav(1); }
+          }, {passive:true});
+        }catch(e){}
+      });
       _rendition.on("rendered",()=>{ rload.style.display="none"; });
       _rendition.on("relocated",loc=>{
         try{ if(loc&&loc.start){ localStorage.setItem("lib_pos_"+eid,loc.start.cfi);
-          const p=loc.start.percentage; if(p!=null) document.getElementById("rpct").textContent=Math.round(p*100)+"%"; } }catch(e){}
+          let p=loc.start.percentage;
+          if((p==null||isNaN(p)) && _rbook.locations && _rbook.locations.length()){ try{ p=_rbook.locations.percentageFromCfi(loc.start.cfi); }catch(e){} }
+          if(p!=null && !isNaN(p)) document.getElementById("rpct").textContent=Math.round(p*100)+"%"; } }catch(e){}
       });
       return _rendition.display(pos||undefined);
     })
-    .then(()=>{ rload.style.display="none"; })
+    .then(()=>{
+      rload.style.display="none";
+      // build locations for the progress % (async; harmless if it fails)
+      try{ _rbook.locations.generate(1400).then(()=>{ if(_rendition&&_rendition.currentLocation){ try{ const cl=_rendition.currentLocation(); if(cl&&cl.start){ const p=_rbook.locations.percentageFromCfi(cl.start.cfi); if(p!=null&&!isNaN(p)) document.getElementById("rpct").textContent=Math.round(p*100)+"%"; } }catch(e){} } }); }catch(e){}
+    })
     .catch(e=>{ rload.textContent="Couldn't load this book ("+(e&&e.message||e)+")"; });
 }
 function openReaderBook(libId){ const b=books.find(x=>x.id==libId); if(!b) return; const eb=ebookFor(b); if(!eb){ toast("No ebook available yet"); return; } openReader(eb.id, b.title); }
