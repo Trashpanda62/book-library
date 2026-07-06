@@ -312,7 +312,7 @@ const STORES = {"generated": "2026-07-05", "local": [{"name": "Millard Oakley Pu
 let books = load();
 const pref = (k,d)=>{ try{ const v=localStorage.getItem(k); return v==null?d:v; }catch(e){ return d; } };
 let view = pref("lib_view","library"), layout = pref("lib_layout","covers"), groupBy = pref("lib_group","none");
-let sortBy = pref("lib_sort","author"), query = "", statusFilter = "";
+let sortBy = pref("lib_sort","author"), query = "", statusFilter = "", READONLY = false;
 const norm = s => (s||"").toLowerCase().replace(/^(the|a|an) /,"").replace(/[^a-z0-9]+/g," ").trim();
 const enc = s => encodeURIComponent(s);
 const nextId = () => (books.reduce((m,b)=>Math.max(m, +b.id||0), 0) + 1);
@@ -321,7 +321,7 @@ function load(){
   try{ const s = localStorage.getItem("lib_books"); if(s) return JSON.parse(s); }catch(e){}
   return CATALOG.map(b=>({...b}));
 }
-function persist(){ try{ localStorage.setItem("lib_books", JSON.stringify(books)); }catch(e){} scheduleSync(); }
+function persist(){ if(READONLY) return; try{ localStorage.setItem("lib_books", JSON.stringify(books)); }catch(e){} scheduleSync(); }
 
 /* ---------- theme ---------- */
 function applyTheme(t){ if(t==="dark"){ document.documentElement.setAttribute("data-theme","dark"); document.querySelector('meta[name=theme-color]').setAttribute("content","#26302a"); } else { document.documentElement.removeAttribute("data-theme"); document.querySelector('meta[name=theme-color]').setAttribute("content","#5b7263"); } }
@@ -334,6 +334,7 @@ const syncURL = () => { let v=localStorage.getItem("lib_sync_url"); if(v===null)
 let _syncT=null, _syncing=false;
 function scheduleSync(){ if(!syncURL()) return; clearTimeout(_syncT); _syncT=setTimeout(pushSync, 1500); }
 async function pushSync(silent){
+  if(READONLY) return;
   const url=syncURL(); if(!url) return;
   const payload={ updated:Date.now(), books, wishlist };
   try{
@@ -512,7 +513,9 @@ function renderWishlist(m){
   const q=norm(query);
   const items = wishlist.filter(w=>!q||norm(w.title).includes(q)||norm(w.author).includes(q)||norm(w.series).includes(q))
     .sort((a,b)=> (b.priority?1:0)-(a.priority?1:0) || (a.status==="upcoming"?1:0)-(b.status==="upcoming"?1:0) || norm(a.title).localeCompare(norm(b.title)));
-  const addBar = `<button class="imp" style="margin:0 0 12px" onclick="openAddWish()">＋ Add a book to the wishlist</button>`;
+  const addBar = `<div style="display:flex;gap:8px;margin:0 0 12px">
+    <button class="imp" style="margin:0;flex:1" onclick="openAddWish()">＋ Add a book</button>
+    <button class="imp sec" style="margin:0;flex:none;padding:13px 16px" onclick="shareWishlist()">🔗 Share</button></div>`;
   if(!wishlist.length){
     m.innerHTML = addBar + `<div class="empty">Your wishlist is empty.<br><span style="font-size:12.5px">Open the <b>Series</b> tab and tap any book you're missing or an upcoming release to add it here — or use the button above.</span></div>`;
     return;
@@ -1067,11 +1070,41 @@ function handleCSV(e){
           isbn, confidence:"import", notes:"" });
       }
       if(!out.length){ toast("No rows found — is this a Libib CSV?"); return; }
-      books=out; persist(); closeSheetTo("library");
-      toast("Imported "+out.length+" books from Libib");
+      promptImport(out);
     }catch(err){ toast("Could not read that CSV"); }
   };
   rd.readAsText(f);
+}
+function hasUserData(){ return books.some(b=>b.status||b.rating||(b.collections&&b.collections.length)||b.finished||(b.notes&&b.confidence!=="import")); }
+function promptImport(rows){
+  const merge=hasUserData();
+  document.getElementById("sheetbody").innerHTML=`<div class="panel">
+    <h3>Import ${rows.length} books from Libib</h3>
+    ${merge?`<p style="font-size:12.5px;color:var(--muted);margin:4px 0 12px">You have reading status / ratings / collections on some books. <b>Merge</b> keeps those and updates the details from Libib; <b>Replace</b> starts fresh.</p>
+      <button class="imp" onclick="applyImport(true)">Merge — keep my reading data</button>
+      <button class="imp sec" onclick="applyImport(false)">Replace everything</button>`
+    :`<p style="font-size:12.5px;color:var(--muted);margin:4px 0 12px">This will load your Libib library into the app.</p>
+      <button class="imp" onclick="applyImport(false)">Import</button>`}
+  </div>`;
+  window._pendingImport=rows; openSheet();
+}
+function applyImport(merge){
+  const rows=window._pendingImport||[]; window._pendingImport=null;
+  if(merge){
+    const byIsbn={}, byTA={};
+    books.forEach(b=>{ if(b.isbn) byIsbn[b.isbn]=b; byTA[norm(b.title)+"|"+norm(b.author)]=b; });
+    let added=0, updated=0;
+    rows.forEach(r=>{
+      const m = (r.isbn&&byIsbn[r.isbn]) || byTA[norm(r.title)+"|"+norm(r.author)];
+      if(m){ // update biblio fields, keep the user's reading data + collections
+        m.title=r.title; m.author=r.author; m.genre=r.genre; if(r.year)m.year=r.year;
+        if(r.series)m.series=r.series; if(r.isbn)m.isbn=r.isbn; m.placeholder=false; updated++;
+      } else { r.id=nextId(); r.status=""; r.rating=0; r.collections=[]; r.added=Date.now(); books.push(r); byTA[norm(r.title)+"|"+norm(r.author)]=r; added++; }
+    });
+    persist(); closeSheetTo("library"); toast("Merged: "+added+" added, "+updated+" updated");
+  } else {
+    books=rows; persist(); closeSheetTo("library"); toast("Imported "+rows.length+" books from Libib");
+  }
 }
 
 /* ---------- ui wiring + history (back button) ---------- */
@@ -1106,19 +1139,60 @@ async function installApp(){
 }
 if("serviceWorker" in navigator){ addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{})); }
 
-/* ---------- restore saved view prefs ---------- */
-(function initPrefs(){
-  document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===view));
-  const gb=document.getElementById("groupby"); if(gb) gb.value=groupBy;
-  const so=document.getElementById("sort"); if(so) so.value=sortBy;
-  document.querySelectorAll("#layout button").forEach(x=>x.classList.toggle("on",x.dataset.l===layout));
-  updateLayoutVis();
-  try{ history.replaceState({view:view}, ""); }catch(e){}   // seed history so back is well-defined
-})();
-// auto-pull latest on launch if sync is configured
-if(syncURL()) pullSync(true);
+/* ---------- read-only shared wishlist (?wishlist) ---------- */
+const isShare = () => /[?&](wishlist|share)\b/.test(location.search);
+function shareWishlist(){
+  const url=location.origin+location.pathname+"?wishlist";
+  if(navigator.share){ navigator.share({title:"Our Wishlist", text:"Books on our wishlist", url}).catch(()=>{}); }
+  else if(navigator.clipboard){ navigator.clipboard.writeText(url).then(()=>toast("Share link copied")); }
+  else { prompt("Share this link:", url); }
+}
+function openBuySheet(key){
+  const w=wishlist.find(x=>x.key===key); if(!w) return;
+  const bl=buyLinks(w);
+  document.getElementById("sheetbody").innerHTML=`
+    <div class="dtop"><div class="dcover" data-id="${esc(w.id)}" id="dcover"><div class="ph mph" style="font-size:11px;padding:8px;text-align:center">${esc(w.title)}</div></div>
+      <div class="dmeta"><h2>${esc(w.title)}</h2><div class="dau">${esc(w.author)}</div>
+      <div>${w.series?`<span class="pill">${esc(w.series)}</span>`:""}${w.status==="upcoming"?`<span class="pill" style="background:var(--up);color:#fff">Releases ${esc(w.release_date||"TBA")}</span>`:""}</div></div></div>
+    <div class="sect"><h4>Local to Livingston, TN</h4><div class="btns">${bl.local}</div></div>
+    <div class="sect"><h4>Buy online</h4><div class="btns">${bl.online}</div></div>`;
+  const dc=document.getElementById("dcover"); resolveCover(w).then(u=>{ if(u){ const i=new Image(); i.onload=()=>{dc.querySelector(".mph").style.display="none";dc.insertBefore(i,dc.firstChild);}; i.src=u; } });
+  openSheet();
+}
+async function renderShareMode(){
+  READONLY=true;
+  ["tabs","libbar","filterbar","gear"].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display="none"; });
+  const sw=document.querySelector(".searchwrap"); if(sw) sw.style.display="none";
+  const brand=document.querySelector(".brand"); if(brand) brand.innerHTML="📚 Our Wishlist";
+  const m=document.getElementById("main");
+  m.innerHTML=`<div class="empty">Loading wishlist…</div>`;
+  try{ const r=await fetch(syncURL()+"/library",{cache:"no-store"}); const d=await r.json(); wishlist=d.wishlist||[]; }catch(e){ wishlist=[]; }
+  if(!wishlist.length){ m.innerHTML=`<div class="empty">This wishlist is empty right now.</div>`; return; }
+  const wl=wishlist.slice().sort((a,b)=>(b.priority?1:0)-(a.priority?1:0)||norm(a.title).localeCompare(norm(b.title)));
+  m.innerHTML=`<div style="font-size:12.5px;color:var(--muted);margin-bottom:10px">Tap a book to buy it — local Livingston stores and online.</div>
+    <div class="group open"><div class="glist">`+wl.map(w=>`
+    <div class="row lg" onclick="openBuySheet('${esc(w.key)}')">
+      <div class="mini" data-id="${esc(w.id)}"><div class="mph">${esc(w.title)}</div></div>
+      <div class="rmain"><div class="rt">${w.priority?"★ ":""}${esc(w.title)}</div><div class="rs">${esc(w.author)}${w.series?" · "+esc(w.series):""}${w.status==="upcoming"?` · <span style="color:var(--up)">Releases ${esc(w.release_date||"TBA")}</span>`:""}</div></div>
+    </div>`).join("")+`</div></div>`;
+  wireCovers(m);
+}
 
-render();
+/* ---------- restore saved view prefs ---------- */
+if(isShare()){
+  renderShareMode();
+} else {
+  (function initPrefs(){
+    document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===view));
+    const gb=document.getElementById("groupby"); if(gb) gb.value=groupBy;
+    const so=document.getElementById("sort"); if(so) so.value=sortBy;
+    document.querySelectorAll("#layout button").forEach(x=>x.classList.toggle("on",x.dataset.l===layout));
+    updateLayoutVis();
+    try{ history.replaceState({view:view}, ""); }catch(e){}   // seed history so back is well-defined
+  })();
+  if(syncURL()) pullSync(true);   // auto-pull latest on launch if sync is configured
+  render();
+}
 </script>
 </body>
 </html>
